@@ -113,20 +113,20 @@ public class ConfigManager {
 
     // Inner class to hold the configuration data
     private static class ConfigData {
-        boolean renderVanillaHud = true; // New setting for rendering the vanilla HUD
+        boolean renderVanillaHud = false; // New setting for rendering the vanilla HUD
         boolean showHealthIcon = true;
         boolean showArmorIcon = true;
         boolean showHungerIcon = true;
         boolean showBreatheIcon = true;
         boolean showNumericHunger = true;
         boolean showNumericOxygen = true;
-        int healthDisplayX = -76;
-        int healthDisplayY = 46;
-        int hungerDisplayX = 24;
-        int hungerDisplayY = 46;
-        int armorDisplayX = -8;
-        int armorDisplayY = 56;
-        int breatheDisplayX = 24;
-        int breatheDisplayY = 62;
+        int healthDisplayX = -70;
+        int healthDisplayY = 43;
+        int hungerDisplayX = 66;
+        int hungerDisplayY = 43;
+        int armorDisplayX = -70;
+        int armorDisplayY = 60;
+        int breatheDisplayX = 67;
+        int breatheDisplayY = 60;
     }
 }

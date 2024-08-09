@@ -23,7 +23,6 @@ public class HealthDisplayHandler implements HudRenderCallback {
         MinecraftClient client = MinecraftClient.getInstance();
         PlayerEntity player = client.player;
 
-        // Exit if player is null or in creative mode
         if (player == null || client.interactionManager.getCurrentGameMode() == GameMode.CREATIVE) {
             return;
         }
@@ -33,20 +32,17 @@ public class HealthDisplayHandler implements HudRenderCallback {
         int absorption = MathHelper.ceil(player.getAbsorptionAmount());
         int armorValue = player.getArmor();
         int hunger = player.getHungerManager().getFoodLevel();
-        int maxHunger = 20;
+        int saturation = MathHelper.ceil(player.getHungerManager().getSaturationLevel());
         int air = player.getAir();
         int maxAir = player.getMaxAir();
 
-        // Define colors
         int healthColor = determineHealthColor(player);
-        int hungerColor = determineHungerColor(hunger, maxHunger);
-        int breatheColor = 0x00BFFF; // DeepSkyBlue color for oxygen
+        int hungerColor = determineHungerColor(hunger, 20);
+        int breatheColor = 0x00BFFF;
 
-        // Get screen dimensions
         int screenWidth = client.getWindow().getScaledWidth();
         int screenHeight = client.getWindow().getScaledHeight();
 
-        // Calculate positions based on screen dimensions and configuration offsets
         int healthPosX = screenWidth / 2 + ConfigManager.healthDisplayX();
         int healthPosY = screenHeight - ConfigManager.healthDisplayY();
 
@@ -59,28 +55,30 @@ public class HealthDisplayHandler implements HudRenderCallback {
         int breathePosX = screenWidth / 2 + ConfigManager.breatheDisplayX();
         int breathePosY = screenHeight - ConfigManager.breatheDisplayY();
 
-        // Render health icon and value
         if (ConfigManager.showHealthIcon()) {
-            renderIcon(context, HEALTH_ICON, healthPosX, healthPosY);
-            context.drawText(client.textRenderer, health + "/" + maxHealth, healthPosX + 18, healthPosY + 4, healthColor, false);
+            renderIcon(context, HEALTH_ICON, healthPosX - 18, healthPosY - 4);
+            drawOutlinedText(context, client, health + "/" + maxHealth, healthPosX, healthPosY, healthColor);
+            if (absorption > 0) {
+                int healthTextWidth = client.textRenderer.getWidth(health + "/" + maxHealth);
+                drawOutlinedText(context, client, "+" + absorption, healthPosX + healthTextWidth + 3, healthPosY - 8, 0xFFFF00);
+            }
         }
-
-        // Render hunger icon and value
         if (ConfigManager.showHungerIcon()) {
-            renderIcon(context, HUNGER_ICON, hungerPosX, hungerPosY);
-            context.drawText(client.textRenderer, hunger + "/" + maxHunger, hungerPosX + 18, hungerPosY + 4, hungerColor, false);
+            drawOutlinedText(context, client, hunger + "/20", hungerPosX - client.textRenderer.getWidth(hunger + "/20"), hungerPosY, hungerColor);
+            renderIcon(context, HUNGER_ICON, hungerPosX, hungerPosY - 4);
+            if (saturation > 0) {
+                drawOutlinedText(context, client, "+" + saturation, hungerPosX - client.textRenderer.getWidth(hunger + "/20") + 22, hungerPosY - 8, 0xFFD700);
+            }
         }
 
-        // Render armor icon and value
         if (ConfigManager.showArmorIcon()) {
-            renderIcon(context, ARMOR_ICON, armorPosX, armorPosY);
-            context.drawText(client.textRenderer, String.valueOf(armorValue), armorPosX + 18, armorPosY + 4, 0xFFFFFF, false);
+            renderIcon(context, ARMOR_ICON, armorPosX - 18, armorPosY - 4);
+            drawOutlinedText(context, client, String.valueOf(armorValue), armorPosX, armorPosY, 0xFFFFFF);
         }
 
-        // Render oxygen icon and value
         if (ConfigManager.showBreatheIcon() && player.isSubmergedInWater()) {
-            renderIcon(context, BREATHE_ICON, breathePosX, breathePosY);
-            context.drawText(client.textRenderer, (air / 20) + "/" + (maxAir / 20), breathePosX + 18, breathePosY + 4, breatheColor, false);
+            drawOutlinedText(context, client, (air / 20) + "/" + (maxAir / 20), breathePosX - client.textRenderer.getWidth((air / 20) + "/" + (maxAir / 20)), breathePosY, breatheColor);
+            renderIcon(context, BREATHE_ICON, breathePosX, breathePosY - 4);
         }
     }
 
@@ -89,32 +87,40 @@ public class HealthDisplayHandler implements HudRenderCallback {
         context.drawTexture(icon, x, y, 0, 0, 16, 16, 16, 16);
     }
 
+    private void drawOutlinedText(DrawContext context, MinecraftClient client, String text, int x, int y, int color) {
+        context.drawText(client.textRenderer, text, x - 1, y, 0x000000, false);
+        context.drawText(client.textRenderer, text, x + 1, y, 0x000000, false);
+        context.drawText(client.textRenderer, text, x, y - 1, 0x000000, false);
+        context.drawText(client.textRenderer, text, x, y + 1, 0x000000, false);
+        context.drawText(client.textRenderer, text, x, y, color, false);
+    }
+
     private int determineHealthColor(PlayerEntity player) {
+        if (player.hasStatusEffect(StatusEffects.POISON)) {
+            return 0x00FF00;
+        } else if (player.hasStatusEffect(StatusEffects.WITHER)) {
+            return 0x707070;
+        }
+
         int health = MathHelper.ceil(player.getHealth());
         int maxHealth = MathHelper.ceil(player.getMaxHealth());
 
-        if (player.hasStatusEffect(StatusEffects.POISON)) {
-            return 0x00FF00; // Green for poison
-        } else if (player.hasStatusEffect(StatusEffects.WITHER)) {
-            return 0x707070; // Gray for wither
-        }
-
         if (health > maxHealth * 0.75) {
-            return 0x00FF00; // Green
+            return 0x00FF00;
         } else if (health > maxHealth * 0.25) {
-            return 0xFFFF00; // Yellow
+            return 0xFFFF00;
         } else {
-            return 0xFF0000; // Red
+            return 0xFF0000;
         }
     }
 
     private int determineHungerColor(int hunger, int maxHunger) {
         if (hunger > maxHunger * 0.75) {
-            return 0xFF8C00; // Dark Orange when full
+            return 0xFF8C00;
         } else if (hunger > maxHunger * 0.25) {
-            return 0xFFFF00; // Yellow when medium
+            return 0xFFFF00;
         } else {
-            return 0xFF4500; // Orange Red when low
+            return 0xFF4500;
         }
     }
 }
