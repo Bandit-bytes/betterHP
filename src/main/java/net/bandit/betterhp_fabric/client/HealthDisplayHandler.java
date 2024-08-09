@@ -55,31 +55,41 @@ public class HealthDisplayHandler implements HudRenderCallback {
         int breathePosX = screenWidth / 2 + ConfigManager.breatheDisplayX();
         int breathePosY = screenHeight - ConfigManager.breatheDisplayY();
 
+        MinecraftClient.getInstance().getProfiler().push("betterhp_healthIcon");
         if (ConfigManager.showHealthIcon()) {
             renderIcon(context, HEALTH_ICON, healthPosX - 18, healthPosY - 4);
-            drawOutlinedText(context, client, health + "/" + maxHealth, healthPosX, healthPosY, healthColor);
+            drawShadowedText(context, client, health + "/" + maxHealth, healthPosX, healthPosY, healthColor);
             if (absorption > 0) {
                 int healthTextWidth = client.textRenderer.getWidth(health + "/" + maxHealth);
-                drawOutlinedText(context, client, "+" + absorption, healthPosX + healthTextWidth + 3, healthPosY - 8, 0xFFFF00);
+                drawShadowedText(context, client, "+" + absorption, healthPosX + healthTextWidth + 3, healthPosY, 0xFFFF00);
             }
         }
+        MinecraftClient.getInstance().getProfiler().pop();
+
+        MinecraftClient.getInstance().getProfiler().push("betterhp_hungerIcon");
         if (ConfigManager.showHungerIcon()) {
-            drawOutlinedText(context, client, hunger + "/20", hungerPosX - client.textRenderer.getWidth(hunger + "/20"), hungerPosY, hungerColor);
+            drawShadowedText(context, client, hunger + "/20", hungerPosX - client.textRenderer.getWidth(hunger + "/20"), hungerPosY, hungerColor);
             renderIcon(context, HUNGER_ICON, hungerPosX, hungerPosY - 4);
             if (saturation > 0) {
-                drawOutlinedText(context, client, "+" + saturation, hungerPosX - client.textRenderer.getWidth(hunger + "/20") + 22, hungerPosY - 8, 0xFFD700);
+                int hungerTextWidth = client.textRenderer.getWidth(hunger + "/20");
+                drawShadowedText(context, client, "+" + saturation, hungerPosX + hungerTextWidth + 3, hungerPosY, 0xFFD700);
             }
         }
+        MinecraftClient.getInstance().getProfiler().pop();
 
+        MinecraftClient.getInstance().getProfiler().push("betterhp_armorIcon");
         if (ConfigManager.showArmorIcon()) {
             renderIcon(context, ARMOR_ICON, armorPosX - 18, armorPosY - 4);
-            drawOutlinedText(context, client, String.valueOf(armorValue), armorPosX, armorPosY, 0xFFFFFF);
+            drawShadowedText(context, client, String.valueOf(armorValue), armorPosX, armorPosY, 0xFFFFFF);
         }
+        MinecraftClient.getInstance().getProfiler().pop();
 
+        MinecraftClient.getInstance().getProfiler().push("betterhp_breatheIcon");
         if (ConfigManager.showBreatheIcon() && player.isSubmergedInWater()) {
-            drawOutlinedText(context, client, (air / 20) + "/" + (maxAir / 20), breathePosX - client.textRenderer.getWidth((air / 20) + "/" + (maxAir / 20)), breathePosY, breatheColor);
+            drawShadowedText(context, client, (air / 20) + "/" + (maxAir / 20), breathePosX - client.textRenderer.getWidth((air / 20) + "/" + (maxAir / 20)), breathePosY, breatheColor);
             renderIcon(context, BREATHE_ICON, breathePosX, breathePosY - 4);
         }
+        MinecraftClient.getInstance().getProfiler().pop();
     }
 
     private void renderIcon(DrawContext context, Identifier icon, int x, int y) {
@@ -87,12 +97,8 @@ public class HealthDisplayHandler implements HudRenderCallback {
         context.drawTexture(icon, x, y, 0, 0, 16, 16, 16, 16);
     }
 
-    private void drawOutlinedText(DrawContext context, MinecraftClient client, String text, int x, int y, int color) {
-        context.drawText(client.textRenderer, text, x - 1, y, 0x000000, false);
-        context.drawText(client.textRenderer, text, x + 1, y, 0x000000, false);
-        context.drawText(client.textRenderer, text, x, y - 1, 0x000000, false);
-        context.drawText(client.textRenderer, text, x, y + 1, 0x000000, false);
-        context.drawText(client.textRenderer, text, x, y, color, false);
+    private void drawShadowedText(DrawContext context, MinecraftClient client, String text, int x, int y, int color) {
+        context.drawText(client.textRenderer, text, x, y, color, true); // 'true' enables the shadow
     }
 
     private int determineHealthColor(PlayerEntity player) {
