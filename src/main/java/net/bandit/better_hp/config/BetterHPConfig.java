@@ -17,18 +17,21 @@ public class BetterHPConfig {
         public final ForgeConfigSpec.BooleanValue showVanillaHearts;
         public final ForgeConfigSpec.BooleanValue showVanillaArmor;
         public final ForgeConfigSpec.BooleanValue showVanillaHunger;
-        public final ForgeConfigSpec.BooleanValue showVanillaOxygen; // New config for vanilla oxygen bubbles
+        public final ForgeConfigSpec.BooleanValue showVanillaOxygen; // Existing config for vanilla oxygen bubbles
         public final ForgeConfigSpec.BooleanValue showNumericHunger;
-        public final ForgeConfigSpec.BooleanValue showOxygenIcon; // New config for custom oxygen icon
-        public final ForgeConfigSpec.BooleanValue showNumericOxygen; // New config for numeric oxygen display
+        public final ForgeConfigSpec.BooleanValue showOxygenIcon; // Existing config for custom oxygen icon
+        public final ForgeConfigSpec.BooleanValue showNumericOxygen; // Existing config for numeric oxygen display
+        public final ForgeConfigSpec.BooleanValue showHealthIcon; // New config for custom health icon
+        public final ForgeConfigSpec.BooleanValue showArmorIcon; // New config for custom armor icon
+        public final ForgeConfigSpec.BooleanValue showHungerIcon; // New config for custom hunger icon
         public final ForgeConfigSpec.IntValue healthDisplayX;
         public final ForgeConfigSpec.IntValue healthDisplayY;
         public final ForgeConfigSpec.IntValue armorDisplayX;
         public final ForgeConfigSpec.IntValue armorDisplayY;
         public final ForgeConfigSpec.IntValue hungerDisplayX;
         public final ForgeConfigSpec.IntValue hungerDisplayY;
-        public final ForgeConfigSpec.IntValue oxygenDisplayX; // New config for oxygen display position
-        public final ForgeConfigSpec.IntValue oxygenDisplayY; // New config for oxygen display position
+        public final ForgeConfigSpec.IntValue oxygenDisplayX; // Existing config for oxygen display position
+        public final ForgeConfigSpec.IntValue oxygenDisplayY; // Existing config for oxygen display position
 
         public Client(ForgeConfigSpec.Builder builder) {
             builder.push("Display Settings");
@@ -60,6 +63,18 @@ public class BetterHPConfig {
             showNumericOxygen = builder
                     .comment("Show numeric oxygen value when underwater")
                     .define("showNumericOxygen", true);
+
+            showHealthIcon = builder
+                    .comment("Show custom health icon")
+                    .define("showHealthIcon", true); // New option for health icon
+
+            showArmorIcon = builder
+                    .comment("Show custom armor icon")
+                    .define("showArmorIcon", true); // New option for armor icon
+
+            showHungerIcon = builder
+                    .comment("Show custom hunger icon")
+                    .define("showHungerIcon", true); // New option for hunger icon
 
             healthDisplayX = builder
                     .comment("Horizontal position of the health icon display")

@@ -26,25 +26,14 @@ public class HealthDisplayHandler {
 
     @SubscribeEvent
     public static void onRenderGui(RenderGuiOverlayEvent.Pre event) {
-        boolean showVanillaHearts = BetterHPConfig.CLIENT.showVanillaHearts.get();
-        boolean showVanillaArmor = BetterHPConfig.CLIENT.showVanillaArmor.get();
-        boolean showVanillaHunger = BetterHPConfig.CLIENT.showVanillaHunger.get();
-        boolean showVanillaOxygen = BetterHPConfig.CLIENT.showVanillaOxygen.get();
-
-        if (!showVanillaHearts && event.getOverlay() == VanillaGuiOverlay.PLAYER_HEALTH.type()) {
-            event.setCanceled(true);
-        }
-
-        if (!showVanillaArmor && event.getOverlay() == VanillaGuiOverlay.ARMOR_LEVEL.type()) {
-            event.setCanceled(true);
-        }
-
-        if (!showVanillaHunger && event.getOverlay() == VanillaGuiOverlay.FOOD_LEVEL.type()) {
-            event.setCanceled(true);
-        }
-
-        if (!showVanillaOxygen && event.getOverlay() == VanillaGuiOverlay.AIR_LEVEL.type()) {
-            event.setCanceled(true);
+        if (event.getOverlay() == VanillaGuiOverlay.PLAYER_HEALTH.type()) {
+            event.setCanceled(event.isCanceled() || !BetterHPConfig.CLIENT.showVanillaHearts.get());
+        } else if (event.getOverlay() == VanillaGuiOverlay.ARMOR_LEVEL.type()) {
+            event.setCanceled(event.isCanceled() || !BetterHPConfig.CLIENT.showVanillaArmor.get());
+        } else if (event.getOverlay() == VanillaGuiOverlay.FOOD_LEVEL.type()) {
+            event.setCanceled(event.isCanceled() || !BetterHPConfig.CLIENT.showVanillaHunger.get());
+        } else if (event.getOverlay() == VanillaGuiOverlay.AIR_LEVEL.type()) {
+            event.setCanceled(event.isCanceled() || !BetterHPConfig.CLIENT.showVanillaOxygen.get());
         }
     }
 
@@ -61,6 +50,9 @@ public class HealthDisplayHandler {
         boolean showNumericHunger = BetterHPConfig.CLIENT.showNumericHunger.get();
         boolean showBreatheIcon = BetterHPConfig.CLIENT.showOxygenIcon.get();
         boolean showNumericOxygen = BetterHPConfig.CLIENT.showNumericOxygen.get();
+        boolean showHealthIcon = BetterHPConfig.CLIENT.showHealthIcon.get();
+        boolean showArmorIcon = BetterHPConfig.CLIENT.showArmorIcon.get();
+        boolean showHungerIcon = BetterHPConfig.CLIENT.showHungerIcon.get();
 
         GuiGraphics guiGraphics = event.getGuiGraphics();
 
@@ -114,13 +106,7 @@ public class HealthDisplayHandler {
         int saturationColor = 0xFFD700;
         int breatheColor = 0x00BFFF;
 
-        // Draw the icons and numeric values
-        if (!showVanillaArmor) {
-            drawIcon(guiGraphics, ARMOR_ICON, centeredArmorX - 18, bottomArmorY - 4, 16, 16);
-            drawShadowedText(guiGraphics, font, armorText, centeredArmorX, bottomArmorY, armorColor);
-        }
-
-        drawIcon(guiGraphics, HEALTH_ICON, centeredHealthX - 18, bottomHealthY - 4, 16, 16);
+        // Draw the numeric values (always visible)
         drawShadowedText(guiGraphics, font, healthText, centeredHealthX, bottomHealthY, textColor);
 
         if (absorptionText != null) {
@@ -129,19 +115,32 @@ public class HealthDisplayHandler {
 
         if (showNumericHunger) {
             drawShadowedText(guiGraphics, font, hungerText, centeredHungerX - font.width(hungerText), bottomHungerY, hungerColor);
-            drawIcon(guiGraphics, HUNGER_ICON, centeredHungerX - font.width(hungerText) + font.width(hungerText) + 2, bottomHungerY - 4, 16, 16);
-
             if (saturationText != null) {
-                drawShadowedText(guiGraphics, font, saturationText, centeredHungerX - font.width(hungerText) + font.width(hungerText) + 18, bottomHungerY, saturationColor);
+                drawShadowedText(guiGraphics, font, saturationText, centeredHungerX + font.width(hungerText) + 5, bottomHungerY, saturationColor);
             }
         }
 
-
-        if (showBreatheIcon && player.isUnderWater()) {
+        if (showNumericOxygen && player.isUnderWater()) {
             drawShadowedText(guiGraphics, font, breatheText, centeredBreatheX - font.width(breatheText), bottomBreatheY, breatheColor);
-            drawIcon(guiGraphics, BREATHE_ICON, centeredBreatheX - font.width(breatheText) + font.width(breatheText) + 2, bottomBreatheY - 4, 16, 16);
         }
 
+        // Draw the icons based on config settings
+        if (showHealthIcon) {
+            drawIcon(guiGraphics, HEALTH_ICON, centeredHealthX - 18, bottomHealthY - 4, 16, 16);
+        }
+
+        if (!showVanillaArmor && showArmorIcon) {
+            drawIcon(guiGraphics, ARMOR_ICON, centeredArmorX - 18, bottomArmorY - 4, 16, 16);
+            drawShadowedText(guiGraphics, font, armorText, centeredArmorX, bottomArmorY, armorColor);
+        }
+
+        if (showHungerIcon) {
+            drawIcon(guiGraphics, HUNGER_ICON, centeredHungerX - font.width(hungerText) + font.width(hungerText) + 2, bottomHungerY - 4, 16, 16);
+        }
+
+        if (showBreatheIcon && player.isUnderWater()) {
+            drawIcon(guiGraphics, BREATHE_ICON, centeredBreatheX - font.width(breatheText) + font.width(breatheText) + 2, bottomBreatheY - 4, 16, 16);
+        }
     }
 
     private static int determineHealthColor(Player player) {
