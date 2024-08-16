@@ -120,7 +120,7 @@ public class HealthDisplayHandler {
             }
         }
 
-        if (showNumericOxygen && player.isUnderWater()) {
+        if (showNumericOxygen && (player.isUnderWater() || air < maxAir)) {
             drawShadowedText(guiGraphics, font, breatheText, centeredBreatheX - font.width(breatheText), bottomBreatheY, breatheColor);
         }
 
@@ -138,7 +138,7 @@ public class HealthDisplayHandler {
             drawIcon(guiGraphics, HUNGER_ICON, centeredHungerX - font.width(hungerText) + font.width(hungerText) + 2, bottomHungerY - 4, 16, 16);
         }
 
-        if (showBreatheIcon && player.isUnderWater()) {
+        if (showBreatheIcon && (player.isUnderWater() || air < maxAir)) {
             drawIcon(guiGraphics, BREATHE_ICON, centeredBreatheX - font.width(breatheText) + font.width(breatheText) + 2, bottomBreatheY - 4, 16, 16);
         }
     }
