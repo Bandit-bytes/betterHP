@@ -23,7 +23,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
         MinecraftClient client = MinecraftClient.getInstance();
         PlayerEntity player = client.player;
 
-        if (player == null || client.interactionManager.getCurrentGameMode() == GameMode.CREATIVE) {
+        if (player == null || client.interactionManager.getCurrentGameMode() == GameMode.CREATIVE || client.interactionManager.getCurrentGameMode() == GameMode.SPECTATOR) {
             return;
         }
 
@@ -85,7 +85,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
         MinecraftClient.getInstance().getProfiler().pop();
 
         MinecraftClient.getInstance().getProfiler().push("betterhp_breatheIcon");
-        if (ConfigManager.showBreatheIcon() && player.isSubmergedInWater()) {
+        if (ConfigManager.showBreatheIcon() && player.isSubmergedInWater() || air < maxAir) {
             drawShadowedText(context, client, (air / 20) + "/" + (maxAir / 20), breathePosX - client.textRenderer.getWidth((air / 20) + "/" + (maxAir / 20)), breathePosY, breatheColor);
             renderIcon(context, BREATHE_ICON, breathePosX, breathePosY - 4);
         }
