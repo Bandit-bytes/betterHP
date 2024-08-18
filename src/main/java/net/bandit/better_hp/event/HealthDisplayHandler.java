@@ -42,7 +42,7 @@ public class HealthDisplayHandler {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
 
-        if (player == null || minecraft.gameMode.getPlayerMode() == GameType.CREATIVE) {
+        if (player == null || minecraft.gameMode.getPlayerMode() == GameType.CREATIVE || minecraft.gameMode.getPlayerMode() == GameType.SPECTATOR) {
             return;
         }
 
