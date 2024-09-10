@@ -4,7 +4,7 @@ license = "MIT" # Your mod's license. Choose the appropriate license for your pr
 
 [[mods]]
 modId = "better_hp" # Your mod's ID, which is usually the same as your package name.
-version = "5.2.3" # Your mod's version.
+version = "5.6.0" # Your mod's version.
 displayName = "Better HP" # The display name of your mod.
 authors = "BanditBytes" # Replace with your name or username.
 description = '''

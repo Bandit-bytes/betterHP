@@ -53,7 +53,7 @@ public class HealthDisplayHandler {
         boolean showHealthIcon = BetterHPConfig.CLIENT.showHealthIcon.get();
         boolean showArmorIcon = BetterHPConfig.CLIENT.showArmorIcon.get();
         boolean showHungerIcon = BetterHPConfig.CLIENT.showHungerIcon.get();
-
+        boolean showNumericHealth = BetterHPConfig.CLIENT.showNumericHealth.get();
         GuiGraphics guiGraphics = event.getGuiGraphics();
 
         int health = (int) player.getHealth();
@@ -106,40 +106,49 @@ public class HealthDisplayHandler {
         int saturationColor = 0xFFD700;
         int breatheColor = 0x00BFFF;
 
-        // Draw the numeric values (always visible)
-        drawShadowedText(guiGraphics, font, healthText, centeredHealthX, bottomHealthY, textColor);
+        if (showNumericHealth) {
+            int healthTextWidth = font.width(healthText);
+            int healthTextOffset = 15; // Increased offset for health text from the icon
+            drawShadowedText(guiGraphics, font, healthText, centeredHealthX - healthTextWidth / 2 + healthTextOffset, bottomHealthY, textColor);
 
-        if (absorptionText != null) {
-            drawShadowedText(guiGraphics, font, absorptionText, centeredHealthX + font.width(healthText) + 5, bottomHealthY, absorptionColor);
+
+            if (absorptionText != null) {
+                drawShadowedText(guiGraphics, font, absorptionText, centeredHealthX + healthTextWidth / 2 + healthTextOffset + 5, bottomHealthY, absorptionColor);
+            }
         }
 
         if (showNumericHunger) {
-            drawShadowedText(guiGraphics, font, hungerText, centeredHungerX - font.width(hungerText), bottomHungerY, hungerColor);
+            int hungerTextWidth = font.width(hungerText);
+            drawShadowedText(guiGraphics, font, hungerText, centeredHungerX - hungerTextWidth / 2, bottomHungerY, hungerColor);
             if (saturationText != null) {
-                drawShadowedText(guiGraphics, font, saturationText, centeredHungerX + font.width(hungerText) + 5, bottomHungerY, saturationColor);
+                int saturationOffset = 14; // Increased offset for saturation text from the hunger text
+                drawShadowedText(guiGraphics, font, saturationText, centeredHungerX + hungerTextWidth / 2 + saturationOffset, bottomHungerY, saturationColor);
             }
         }
 
         if (showNumericOxygen && (player.isUnderWater() || air < maxAir)) {
-            drawShadowedText(guiGraphics, font, breatheText, centeredBreatheX - font.width(breatheText), bottomBreatheY, breatheColor);
+            int breatheTextWidth = font.width(breatheText);
+            drawShadowedText(guiGraphics, font, breatheText, centeredBreatheX - breatheTextWidth / 2, bottomBreatheY, breatheColor);
         }
 
-        // Draw the icons based on config settings
+        // Adjusted icon positions to prevent clipping
         if (showHealthIcon) {
-            drawIcon(guiGraphics, HEALTH_ICON, centeredHealthX - 18, bottomHealthY - 4, 16, 16);
+            drawIcon(guiGraphics, HEALTH_ICON, centeredHealthX - 24, bottomHealthY - 4, 16, 16); // Moved slightly to the left
         }
 
         if (!showVanillaArmor && showArmorIcon) {
-            drawIcon(guiGraphics, ARMOR_ICON, centeredArmorX - 18, bottomArmorY - 4, 16, 16);
+            drawIcon(guiGraphics, ARMOR_ICON, centeredArmorX - 24, bottomArmorY - 4, 16, 16); // Moved slightly to the left
             drawShadowedText(guiGraphics, font, armorText, centeredArmorX, bottomArmorY, armorColor);
         }
 
         if (showHungerIcon) {
-            drawIcon(guiGraphics, HUNGER_ICON, centeredHungerX - font.width(hungerText) + font.width(hungerText) + 2, bottomHungerY - 4, 16, 16);
+            int hungerTextWidth = font.width(hungerText);
+            drawIcon(guiGraphics, HUNGER_ICON, centeredHungerX - hungerTextWidth / 2 + hungerTextWidth + 2, bottomHungerY - 4, 16, 16);
         }
 
         if (showBreatheIcon && (player.isUnderWater() || air < maxAir)) {
-            drawIcon(guiGraphics, BREATHE_ICON, centeredBreatheX - font.width(breatheText) + font.width(breatheText) + 2, bottomBreatheY - 4, 16, 16);
+            int breatheTextWidth = font.width(breatheText);
+            drawIcon(guiGraphics, BREATHE_ICON, centeredBreatheX - breatheTextWidth / 2 + breatheTextWidth + 2, bottomBreatheY - 4, 16, 16);
         }
     }
 
@@ -154,7 +163,7 @@ public class HealthDisplayHandler {
             return 0x00FF00; // Bright Green color for Poison effect
         }
 
-        return 0xFF0000; // Default red color for health
+        return BetterHPConfig.CLIENT.healthColor.get();
     }
 
     private static void drawIcon(GuiGraphics guiGraphics, ResourceLocation icon, int x, int y, int width, int height) {
