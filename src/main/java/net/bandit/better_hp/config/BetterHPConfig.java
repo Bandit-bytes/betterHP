@@ -15,6 +15,7 @@ public class BetterHPConfig {
 
     public static class Client {
         public final ForgeConfigSpec.BooleanValue showVanillaHearts;
+        public final ForgeConfigSpec.BooleanValue enableDynamicHealthColor; // Removed static and corrected field type
         public final ForgeConfigSpec.BooleanValue showVanillaArmor;
         public final ForgeConfigSpec.BooleanValue showVanillaHunger;
         public final ForgeConfigSpec.BooleanValue showVanillaOxygen;
@@ -81,6 +82,10 @@ public class BetterHPConfig {
             showHungerIcon = builder
                     .comment("Show custom hunger icon")
                     .define("showHungerIcon", true);
+
+            enableDynamicHealthColor = builder
+                    .comment("Enable dynamic health color change (Green -> Full, Yellow -> Low, Red -> Critical)")
+                    .define("enableDynamicHealthColor", true);
 
             healthDisplayX = builder
                     .comment("Horizontal position of the health icon display")

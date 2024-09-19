@@ -54,6 +54,7 @@ public class HealthDisplayHandler {
         boolean showArmorIcon = BetterHPConfig.CLIENT.showArmorIcon.get();
         boolean showHungerIcon = BetterHPConfig.CLIENT.showHungerIcon.get();
         boolean showNumericHealth = BetterHPConfig.CLIENT.showNumericHealth.get();
+        boolean enableDynamicColor = BetterHPConfig.CLIENT.enableDynamicHealthColor.get();
         GuiGraphics guiGraphics = event.getGuiGraphics();
 
         int health = (int) player.getHealth();
@@ -99,19 +100,23 @@ public class HealthDisplayHandler {
 
         Font font = minecraft.font;
 
-        int textColor = determineHealthColor(player);
+        int textColor = enableDynamicColor ? getDynamicHealthColor(health, maxHealth) : BetterHPConfig.CLIENT.healthColor.get();
         int absorptionColor = 0xFFFF00;
         int armorColor = 0xAAAAAA;
         int hungerColor = 0xFF7518;
         int saturationColor = 0xFFD700;
         int breatheColor = 0x00BFFF;
 
+
+        float healthPercentage = (float) health / maxHealth;
         if (showNumericHealth) {
             int healthTextWidth = font.width(healthText);
-            int healthTextOffset = 15; // Increased offset for health text from the icon
+            int healthTextOffset = 15;
+
+            // Render the numeric health value as usual without any special effect
             drawShadowedText(guiGraphics, font, healthText, centeredHealthX - healthTextWidth / 2 + healthTextOffset, bottomHealthY, textColor);
 
-
+            // If absorption is present, render that as well
             if (absorptionText != null) {
                 drawShadowedText(guiGraphics, font, absorptionText, centeredHealthX + healthTextWidth / 2 + healthTextOffset + 5, bottomHealthY, absorptionColor);
             }
@@ -152,18 +157,15 @@ public class HealthDisplayHandler {
         }
     }
 
-    private static int determineHealthColor(Player player) {
-        MobEffectInstance witherEffect = player.getEffect(MobEffects.WITHER);
-        if (witherEffect != null) {
-            return 0x800080; // Dark Purple color for Wither effect
+    private static int getDynamicHealthColor(int health, int maxHealth) {
+        float healthPercentage = (float) health / maxHealth;
+        if (healthPercentage > 0.6f) {
+            return 0x00FF00; // Green when health is full
+        } else if (healthPercentage > 0.3f) {
+            return 0xFFFF00; // Yellow when health is medium
+        } else {
+            return 0xFF0000; // Red when health is low
         }
-
-        MobEffectInstance poisonEffect = player.getEffect(MobEffects.POISON);
-        if (poisonEffect != null) {
-            return 0x00FF00; // Bright Green color for Poison effect
-        }
-
-        return BetterHPConfig.CLIENT.healthColor.get();
     }
 
     private static void drawIcon(GuiGraphics guiGraphics, ResourceLocation icon, int x, int y, int width, int height) {
