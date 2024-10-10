@@ -5,8 +5,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import net.minecraftforge.api.distmarker.Dist;
@@ -24,12 +22,36 @@ public class HealthDisplayHandler {
     private static final ResourceLocation ARMOR_ICON = new ResourceLocation("better_hp", "textures/gui/armor_icon.png");
     private static final ResourceLocation BREATHE_ICON = new ResourceLocation("better_hp", "textures/gui/breathe_icon.png");
 
+    // Caching the config values
+    private static boolean showVanillaArmor;
+    private static boolean showNumericHunger;
+    private static boolean showBreatheIcon;
+    private static boolean showNumericOxygen;
+    private static boolean showHealthIcon;
+    private static boolean showArmorIcon;
+    private static boolean showHungerIcon;
+    private static boolean showNumericHealth;
+    private static boolean enableDynamicColor;
+
+    // Initialize the config values
+    public static void initializeConfigs() {
+        showVanillaArmor = BetterHPConfig.CLIENT.showVanillaArmor.get();
+        showNumericHunger = BetterHPConfig.CLIENT.showNumericHunger.get();
+        showBreatheIcon = BetterHPConfig.CLIENT.showOxygenIcon.get();
+        showNumericOxygen = BetterHPConfig.CLIENT.showNumericOxygen.get();
+        showHealthIcon = BetterHPConfig.CLIENT.showHealthIcon.get();
+        showArmorIcon = BetterHPConfig.CLIENT.showArmorIcon.get();
+        showHungerIcon = BetterHPConfig.CLIENT.showHungerIcon.get();
+        showNumericHealth = BetterHPConfig.CLIENT.showNumericHealth.get();
+        enableDynamicColor = BetterHPConfig.CLIENT.enableDynamicHealthColor.get();
+    }
+
     @SubscribeEvent
     public static void onRenderGui(RenderGuiOverlayEvent.Pre event) {
         if (event.getOverlay() == VanillaGuiOverlay.PLAYER_HEALTH.type()) {
             event.setCanceled(event.isCanceled() || !BetterHPConfig.CLIENT.showVanillaHearts.get());
         } else if (event.getOverlay() == VanillaGuiOverlay.ARMOR_LEVEL.type()) {
-            event.setCanceled(event.isCanceled() || !BetterHPConfig.CLIENT.showVanillaArmor.get());
+            event.setCanceled(event.isCanceled() || !showVanillaArmor);
         } else if (event.getOverlay() == VanillaGuiOverlay.FOOD_LEVEL.type()) {
             event.setCanceled(event.isCanceled() || !BetterHPConfig.CLIENT.showVanillaHunger.get());
         } else if (event.getOverlay() == VanillaGuiOverlay.AIR_LEVEL.type()) {
@@ -46,15 +68,9 @@ public class HealthDisplayHandler {
             return;
         }
 
-        boolean showVanillaArmor = BetterHPConfig.CLIENT.showVanillaArmor.get();
-        boolean showNumericHunger = BetterHPConfig.CLIENT.showNumericHunger.get();
-        boolean showBreatheIcon = BetterHPConfig.CLIENT.showOxygenIcon.get();
-        boolean showNumericOxygen = BetterHPConfig.CLIENT.showNumericOxygen.get();
-        boolean showHealthIcon = BetterHPConfig.CLIENT.showHealthIcon.get();
-        boolean showArmorIcon = BetterHPConfig.CLIENT.showArmorIcon.get();
-        boolean showHungerIcon = BetterHPConfig.CLIENT.showHungerIcon.get();
-        boolean showNumericHealth = BetterHPConfig.CLIENT.showNumericHealth.get();
-        boolean enableDynamicColor = BetterHPConfig.CLIENT.enableDynamicHealthColor.get();
+        // Ensure the config values are initialized
+        initializeConfigs();
+
         GuiGraphics guiGraphics = event.getGuiGraphics();
 
         int health = (int) player.getHealth();
@@ -69,6 +85,7 @@ public class HealthDisplayHandler {
         int screenWidth = minecraft.getWindow().getGuiScaledWidth();
         int screenHeight = minecraft.getWindow().getGuiScaledHeight();
 
+        // Define positions for each display element based on configuration
         int healthDisplayX = BetterHPConfig.CLIENT.healthDisplayX.get();
         int healthDisplayY = BetterHPConfig.CLIENT.healthDisplayY.get();
         int armorDisplayX = BetterHPConfig.CLIENT.armorDisplayX.get();
@@ -90,16 +107,9 @@ public class HealthDisplayHandler {
         int centeredBreatheX = (screenWidth / 2) + breatheDisplayX;
         int bottomBreatheY = screenHeight - breatheDisplayY;
 
-        // Define numeric display texts
-        String healthText = health + "/" + maxHealth;
-        String absorptionText = absorption > 0 ? "+" + absorption : null;
-        String armorText = armorValue + "";
-        String hungerText = hunger + "/" + 20;
-        String saturationText = saturation > 0 ? " +" + saturation : null;
-        String breatheText = (air / 20) + "/" + (maxAir / 20);
-
         Font font = minecraft.font;
 
+        // Dynamically calculated health color based on config
         int textColor = enableDynamicColor ? getDynamicHealthColor(health, maxHealth) : BetterHPConfig.CLIENT.healthColor.get();
         int absorptionColor = 0xFFFF00;
         int armorColor = 0xAAAAAA;
@@ -107,51 +117,63 @@ public class HealthDisplayHandler {
         int saturationColor = 0xFFD700;
         int breatheColor = 0x00BFFF;
 
-
-        float healthPercentage = (float) health / maxHealth;
+        // Rendering health
         if (showNumericHealth) {
+            String healthText = health + "/" + maxHealth;
             int healthTextWidth = font.width(healthText);
             int healthTextOffset = 15;
 
-            // Render the numeric health value as usual without any special effect
             drawShadowedText(guiGraphics, font, healthText, centeredHealthX - healthTextWidth / 2 + healthTextOffset, bottomHealthY, textColor);
 
-            // If absorption is present, render that as well
+            String absorptionText = absorption > 0 ? "+" + absorption : null;
             if (absorptionText != null) {
                 drawShadowedText(guiGraphics, font, absorptionText, centeredHealthX + healthTextWidth / 2 + healthTextOffset + 5, bottomHealthY, absorptionColor);
             }
         }
 
+        // Rendering hunger
         if (showNumericHunger) {
+            String hungerText = hunger + "/" + 20;
             int hungerTextWidth = font.width(hungerText);
+
             drawShadowedText(guiGraphics, font, hungerText, centeredHungerX - hungerTextWidth / 2, bottomHungerY, hungerColor);
+
+            String saturationText = saturation > 0 ? " +" + saturation : null;
             if (saturationText != null) {
-                int saturationOffset = 14; // Increased offset for saturation text from the hunger text
+                int saturationOffset = 14; // Offset for saturation text
                 drawShadowedText(guiGraphics, font, saturationText, centeredHungerX + hungerTextWidth / 2 + saturationOffset, bottomHungerY, saturationColor);
             }
         }
 
+        // Rendering oxygen
         if (showNumericOxygen && (player.isUnderWater() || air < maxAir)) {
+            String breatheText = (air / 20) + "/" + (maxAir / 20);
             int breatheTextWidth = font.width(breatheText);
+
             drawShadowedText(guiGraphics, font, breatheText, centeredBreatheX - breatheTextWidth / 2, bottomBreatheY, breatheColor);
         }
 
-        // Adjusted icon positions to prevent clipping
+        // Rendering health icon
         if (showHealthIcon) {
-            drawIcon(guiGraphics, HEALTH_ICON, centeredHealthX - 24, bottomHealthY - 4, 16, 16); // Moved slightly to the left
+            drawIcon(guiGraphics, HEALTH_ICON, centeredHealthX - 24, bottomHealthY - 4, 16, 16);
         }
 
+        // Rendering armor
         if (!showVanillaArmor && showArmorIcon) {
-            drawIcon(guiGraphics, ARMOR_ICON, centeredArmorX - 24, bottomArmorY - 4, 16, 16); // Moved slightly to the left
-            drawShadowedText(guiGraphics, font, armorText, centeredArmorX, bottomArmorY, armorColor);
+            drawIcon(guiGraphics, ARMOR_ICON, centeredArmorX - 24, bottomArmorY - 4, 16, 16);
+            drawShadowedText(guiGraphics, font, String.valueOf(armorValue), centeredArmorX, bottomArmorY, armorColor);
         }
 
+        // Rendering hunger icon
         if (showHungerIcon) {
+            String hungerText = hunger + "/" + 20;
             int hungerTextWidth = font.width(hungerText);
             drawIcon(guiGraphics, HUNGER_ICON, centeredHungerX - hungerTextWidth / 2 + hungerTextWidth + 2, bottomHungerY - 4, 16, 16);
         }
 
+        // Rendering oxygen icon
         if (showBreatheIcon && (player.isUnderWater() || air < maxAir)) {
+            String breatheText = (air / 20) + "/" + (maxAir / 20);
             int breatheTextWidth = font.width(breatheText);
             drawIcon(guiGraphics, BREATHE_ICON, centeredBreatheX - breatheTextWidth / 2 + breatheTextWidth + 2, bottomBreatheY - 4, 16, 16);
         }

@@ -15,7 +15,7 @@ public class BetterHPConfig {
 
     public static class Client {
         public final ForgeConfigSpec.BooleanValue showVanillaHearts;
-        public final ForgeConfigSpec.BooleanValue enableDynamicHealthColor; // Removed static and corrected field type
+        public final ForgeConfigSpec.BooleanValue enableDynamicHealthColor;
         public final ForgeConfigSpec.BooleanValue showVanillaArmor;
         public final ForgeConfigSpec.BooleanValue showVanillaHunger;
         public final ForgeConfigSpec.BooleanValue showVanillaOxygen;
