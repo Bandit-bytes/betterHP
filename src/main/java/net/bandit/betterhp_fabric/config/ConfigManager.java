@@ -26,7 +26,6 @@ public class ConfigManager {
         watchConfigFile(); // Watch for changes
     }
 
-    // Method to load the configuration
     public static void loadConfig() {
         if (!CONFIG_FILE.exists()) {
             System.out.println("Configuration file does not exist. Creating new config with default values.");
@@ -36,22 +35,31 @@ public class ConfigManager {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {
                 configData = GSON.fromJson(reader, ConfigData.class);
                 if (configData == null) {
-                    System.out.println("Configuration file is empty or corrupted. Reverting to default values.");
-                    configData = new ConfigData(); // Ensure configData is not null
+                    throw new IOException("Config file contains invalid data."); // Throw exception on invalid data
                 }
                 System.out.println("Configuration loaded from " + CONFIG_FILE.getName());
             } catch (IOException e) {
                 System.err.println("Error reading configuration file: " + e.getMessage());
                 configData = new ConfigData(); // Default to in-memory defaults on error
+                saveConfig(); // Save default config to correct corrupted file
             }
         }
     }
 
-    // Method to save the configuration
+    // Debounce save to prevent rapid saves
+    private static long lastSaveTime = 0;
+    private static final long SAVE_COOLDOWN_MS = 500; // 500ms cooldown
+
     public static void saveConfig() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastSaveTime < SAVE_COOLDOWN_MS) {
+            return; // Too soon to save again
+        }
+
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(configData, writer);
-            lastModified = CONFIG_FILE.lastModified(); // Update last modified time
+            lastModified = CONFIG_FILE.lastModified();
+            lastSaveTime = currentTime;
             System.out.println("Configuration saved to " + CONFIG_FILE.getName());
         } catch (IOException e) {
             System.err.println("Error saving configuration file: " + e.getMessage());
@@ -111,15 +119,27 @@ public class ConfigManager {
     public static int breatheDisplayX() { return configData != null ? configData.breatheDisplayX : 24; }
     public static int breatheDisplayY() { return configData != null ? configData.breatheDisplayY : 60; }
 
+    // Getter and setter for configData
+    public static ConfigData getConfigData() {
+        if (configData == null) {
+            loadConfig();  // Ensure config is loaded
+        }
+        return configData;
+    }
+
+    public static void setConfigData(ConfigData newConfigData) {
+        configData = newConfigData;
+    }
+
     // Inner class to hold the configuration data
-    private static class ConfigData {
-        boolean renderVanillaHud = false; // New setting for rendering the vanilla HUD
+    public static class ConfigData {
+        boolean renderVanillaHud = false;
         boolean showHealthIcon = true;
         boolean showArmorIcon = true;
         boolean showHungerIcon = true;
         boolean showBreatheIcon = true;
-        boolean showNumericHunger = true;
-        boolean showNumericOxygen = true;
+        public boolean showNumericHunger = true;
+        public boolean showNumericOxygen = true;
         int healthDisplayX = -70;
         int healthDisplayY = 43;
         int hungerDisplayX = 66;

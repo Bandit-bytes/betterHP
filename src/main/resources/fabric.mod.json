@@ -5,6 +5,7 @@
   "name": "betterHP fabric",
   "description": "BetterHP Mod for Fabric",
   "authors": ["Bandit-Bytes"],
+  "icon": "assets/betterhp_fabric/icon.png",
   "contact": {},
   "license": "All-Rights-Reserved",
   "environment": "*",
@@ -14,6 +15,9 @@
     ],
     "main": [
       "net.bandit.betterhp_fabric.BetterHPFabric"
+    ],
+    "modmenu": [
+      "net.bandit.betterhp_fabric.config.BetterHpModMenuIntegration"
     ]
   },
   "mixins": [
