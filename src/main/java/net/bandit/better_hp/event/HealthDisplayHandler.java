@@ -22,7 +22,6 @@ public class HealthDisplayHandler {
     private static final ResourceLocation ARMOR_ICON = new ResourceLocation("better_hp", "textures/gui/armor_icon.png");
     private static final ResourceLocation BREATHE_ICON = new ResourceLocation("better_hp", "textures/gui/breathe_icon.png");
 
-    // Caching the config values
     private static boolean showVanillaArmor;
     private static boolean showNumericHunger;
     private static boolean showBreatheIcon;
@@ -33,7 +32,20 @@ public class HealthDisplayHandler {
     private static boolean showNumericHealth;
     private static boolean enableDynamicColor;
 
-    // Initialize the config values
+    private static float lastHealth = -1;
+    private static float lastMaxHealth = -1;
+    private static int lastAbsorption = -1;
+    private static int lastArmor = -1;
+    private static int lastHunger = -1;
+    private static int lastSaturation = -1;
+    private static int lastAir = -1;
+    private static int lastMaxAir = -1;
+
+
+    private static int updateCounter = 0;
+    private static final int UPDATE_INTERVAL = 10;  // Update every 10 ticks
+
+
     public static void initializeConfigs() {
         showVanillaArmor = BetterHPConfig.CLIENT.showVanillaArmor.get();
         showNumericHunger = BetterHPConfig.CLIENT.showNumericHunger.get();
@@ -68,13 +80,14 @@ public class HealthDisplayHandler {
             return;
         }
 
-        // Ensure the config values are initialized
+        if (updateCounter++ % UPDATE_INTERVAL != 0) {
+            return;
+        }
+
         initializeConfigs();
 
-        GuiGraphics guiGraphics = event.getGuiGraphics();
-
-        int health = (int) player.getHealth();
-        int maxHealth = (int) player.getMaxHealth();
+        float health = player.getHealth();
+        float maxHealth = player.getMaxHealth();
         int absorption = (int) player.getAbsorptionAmount();
         int armorValue = player.getArmorValue();
         int hunger = player.getFoodData().getFoodLevel();
@@ -82,10 +95,14 @@ public class HealthDisplayHandler {
         int air = player.getAirSupply();
         int maxAir = player.getMaxAirSupply();
 
-        int screenWidth = minecraft.getWindow().getGuiScaledWidth();
-        int screenHeight = minecraft.getWindow().getGuiScaledHeight();
+        GuiGraphics guiGraphics = event.getGuiGraphics();
+        renderGui(guiGraphics, minecraft.font, health, maxHealth, absorption, armorValue, hunger, saturation, air, maxAir);
+    }
 
-        // Define positions for each display element based on configuration
+    private static void renderGui(GuiGraphics guiGraphics, Font font, float health, float maxHealth, int absorption, int armorValue, int hunger, int saturation, int air, int maxAir) {
+        int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+        int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+
         int healthDisplayX = BetterHPConfig.CLIENT.healthDisplayX.get();
         int healthDisplayY = BetterHPConfig.CLIENT.healthDisplayY.get();
         int armorDisplayX = BetterHPConfig.CLIENT.armorDisplayX.get();
@@ -107,9 +124,7 @@ public class HealthDisplayHandler {
         int centeredBreatheX = (screenWidth / 2) + breatheDisplayX;
         int bottomBreatheY = screenHeight - breatheDisplayY;
 
-        Font font = minecraft.font;
 
-        // Dynamically calculated health color based on config
         int textColor = enableDynamicColor ? getDynamicHealthColor(health, maxHealth) : BetterHPConfig.CLIENT.healthColor.get();
         int absorptionColor = 0xFFFF00;
         int armorColor = 0xAAAAAA;
@@ -117,21 +132,18 @@ public class HealthDisplayHandler {
         int saturationColor = 0xFFD700;
         int breatheColor = 0x00BFFF;
 
-        // Rendering health
+
         if (showNumericHealth) {
-            String healthText = health + "/" + maxHealth;
+            String healthText = String.format("%.1f/%.1f", health, maxHealth);
             int healthTextWidth = font.width(healthText);
             int healthTextOffset = 15;
-
             drawShadowedText(guiGraphics, font, healthText, centeredHealthX - healthTextWidth / 2 + healthTextOffset, bottomHealthY, textColor);
-
             String absorptionText = absorption > 0 ? "+" + absorption : null;
             if (absorptionText != null) {
                 drawShadowedText(guiGraphics, font, absorptionText, centeredHealthX + healthTextWidth / 2 + healthTextOffset + 5, bottomHealthY, absorptionColor);
             }
         }
 
-        // Rendering hunger
         if (showNumericHunger) {
             String hungerText = hunger + "/" + 20;
             int hungerTextWidth = font.width(hungerText);
@@ -140,62 +152,45 @@ public class HealthDisplayHandler {
 
             String saturationText = saturation > 0 ? " +" + saturation : null;
             if (saturationText != null) {
-                int saturationOffset = 14; // Offset for saturation text
+                int saturationOffset = 14;
                 drawShadowedText(guiGraphics, font, saturationText, centeredHungerX + hungerTextWidth / 2 + saturationOffset, bottomHungerY, saturationColor);
             }
         }
-
-        // Rendering oxygen
-        if (showNumericOxygen && (player.isUnderWater() || air < maxAir)) {
+        if (showNumericOxygen && (air < maxAir)) {
             String breatheText = (air / 20) + "/" + (maxAir / 20);
             int breatheTextWidth = font.width(breatheText);
 
             drawShadowedText(guiGraphics, font, breatheText, centeredBreatheX - breatheTextWidth / 2, bottomBreatheY, breatheColor);
         }
-
-        // Rendering health icon
         if (showHealthIcon) {
             drawIcon(guiGraphics, HEALTH_ICON, centeredHealthX - 24, bottomHealthY - 4, 16, 16);
         }
-
-        // Rendering armor
         if (!showVanillaArmor && showArmorIcon) {
             drawIcon(guiGraphics, ARMOR_ICON, centeredArmorX - 24, bottomArmorY - 4, 16, 16);
             drawShadowedText(guiGraphics, font, String.valueOf(armorValue), centeredArmorX, bottomArmorY, armorColor);
         }
-
-        // Rendering hunger icon
         if (showHungerIcon) {
-            String hungerText = hunger + "/" + 20;
-            int hungerTextWidth = font.width(hungerText);
-            drawIcon(guiGraphics, HUNGER_ICON, centeredHungerX - hungerTextWidth / 2 + hungerTextWidth + 2, bottomHungerY - 4, 16, 16);
+            drawIcon(guiGraphics, HUNGER_ICON, centeredHungerX + 18, bottomHungerY - 4, 16, 16);
         }
-
-        // Rendering oxygen icon
-        if (showBreatheIcon && (player.isUnderWater() || air < maxAir)) {
-            String breatheText = (air / 20) + "/" + (maxAir / 20);
-            int breatheTextWidth = font.width(breatheText);
-            drawIcon(guiGraphics, BREATHE_ICON, centeredBreatheX - breatheTextWidth / 2 + breatheTextWidth + 2, bottomBreatheY - 4, 16, 16);
+        if (showBreatheIcon && (air < maxAir)) {
+            drawIcon(guiGraphics, BREATHE_ICON, centeredBreatheX + 18, bottomBreatheY - 4, 16, 16);
         }
     }
-
-    private static int getDynamicHealthColor(int health, int maxHealth) {
-        float healthPercentage = (float) health / maxHealth;
+    private static int getDynamicHealthColor(float health, float maxHealth) {
+        float healthPercentage = health / maxHealth;
         if (healthPercentage > 0.6f) {
-            return 0x00FF00; // Green when health is full
+            return 0x00FF00;  // Green
         } else if (healthPercentage > 0.3f) {
-            return 0xFFFF00; // Yellow when health is medium
+            return 0xFFFF00;  // Yellow
         } else {
-            return 0xFF0000; // Red when health is low
+            return 0xFF0000;  // Red
         }
     }
-
     private static void drawIcon(GuiGraphics guiGraphics, ResourceLocation icon, int x, int y, int width, int height) {
         RenderSystem.setShaderTexture(0, icon);
         guiGraphics.blit(icon, x, y, 0, 0, width, height, width, height);
     }
-
     private static void drawShadowedText(GuiGraphics guiGraphics, Font font, String text, int x, int y, int color) {
-        guiGraphics.drawString(font, text, x, y, color, true); // Use the shadowed text option
+        guiGraphics.drawString(font, text, x, y, color, true);
     }
 }
