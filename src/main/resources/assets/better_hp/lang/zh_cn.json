@@ -1,0 +1,27 @@
+{
+  "config.better_hp.display_settings": "显示设置",
+  "config.better_hp.show_vanilla_hearts": "显示原版心",
+  "config.better_hp.show_decimal_health": "以小数或整数显示健康值",
+  "config.better_hp.show_vanilla_armor": "显示原版护甲栏",
+  "config.better_hp.show_vanilla_hunger": "显示原版饥饿栏",
+  "config.better_hp.show_vanilla_oxygen": "显示原版氧气气泡",
+  "config.better_hp.show_numeric_hunger": "以数字形式显示饥饿值（取代原版饥饿栏）",
+  "config.better_hp.show_oxygen_icon": "当在水下时显示自定义氧气图标",
+  "config.better_hp.show_numeric_health": "以数字形式显示健康值（取代原版健康栏）",
+  "config.better_hp.show_numeric_oxygen": "当在水下时显示氧气的数字值",
+  "config.better_hp.show_health_icon": "显示自定义健康图标",
+  "config.better_hp.show_armor_icon": "显示自定义护甲图标",
+  "config.better_hp.show_hunger_icon": "显示自定义饥饿图标",
+  "config.better_hp.enable_dynamic_health_color": "启用动态健康颜色变化（绿色 -> 满，黄色 -> 低，红色 -> 危急）",
+  "config.better_hp.health_display_x": "健康图标显示的水平位置",
+  "config.better_hp.health_display_y": "健康图标显示的垂直位置",
+  "config.better_hp.armor_display_x": "护甲图标显示的水平位置",
+  "config.better_hp.armor_display_y": "护甲图标显示的垂直位置",
+  "config.better_hp.hunger_display_x": "饥饿图标显示的水平位置",
+  "config.better_hp.hunger_display_y": "饥饿图标显示的垂直位置",
+  "config.better_hp.oxygen_display_x": "氧气图标显示的水平位置",
+  "config.better_hp.oxygen_display_y": "氧气图标显示的垂直位置",
+  "config.better_hp.health_color": "HUD中健康值的颜色（十进制颜色代码；默认是红色）",
+  "config.better_hp.healthTextOffset": "健康图标与数值文本之间的水平偏移量"
+
+}

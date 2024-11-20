@@ -1,0 +1,27 @@
+{
+  "config.better_hp.display_settings": "Display Settings",
+  "config.better_hp.show_vanilla_hearts": "Show vanilla hearts",
+  "config.better_hp.show_decimal_health": "Show health as decimals or whole numbers",
+  "config.better_hp.show_vanilla_armor": "Show vanilla armor bar",
+  "config.better_hp.show_vanilla_hunger": "Show vanilla hunger bar",
+  "config.better_hp.show_vanilla_oxygen": "Show vanilla oxygen bubbles",
+  "config.better_hp.show_numeric_hunger": "Show numeric hunger instead of vanilla hunger bar",
+  "config.better_hp.show_oxygen_icon": "Show custom oxygen icon when underwater",
+  "config.better_hp.show_numeric_health": "Show numeric health instead of vanilla health bar",
+  "config.better_hp.show_numeric_oxygen": "Show numeric oxygen value when underwater",
+  "config.better_hp.show_health_icon": "Show custom health icon",
+  "config.better_hp.show_armor_icon": "Show custom armor icon",
+  "config.better_hp.show_hunger_icon": "Show custom hunger icon",
+  "config.better_hp.enable_dynamic_health_color": "Enable dynamic health color change (Green -> Full, Yellow -> Low, Red -> Critical)",
+  "config.better_hp.health_display_x": "Horizontal position of the health icon display",
+  "config.better_hp.health_display_y": "Vertical position of the health icon display",
+  "config.better_hp.armor_display_x": "Horizontal position of the armor icon display",
+  "config.better_hp.armor_display_y": "Vertical position of the armor icon display",
+  "config.better_hp.hunger_display_x": "Horizontal position of the hunger icon display",
+  "config.better_hp.hunger_display_y": "Vertical position of the hunger icon display",
+  "config.better_hp.oxygen_display_x": "Horizontal position of the oxygen icon display",
+  "config.better_hp.oxygen_display_y": "Vertical position of the oxygen icon display",
+  "config.better_hp.health_color": "Color of the health numerical value in the HUD (Decimal color code; Default is Red)",
+  "config.better_hp.healthTextOffset": "Horizontal offset between the health icon and the numeric health text [Default: 15] [100+hp:Set -> 20 999+hp: set -> 25] "
+
+}

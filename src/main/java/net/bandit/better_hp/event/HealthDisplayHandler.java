@@ -105,6 +105,7 @@ public class HealthDisplayHandler {
 
         int healthDisplayX = BetterHPConfig.CLIENT.healthDisplayX.get();
         int healthDisplayY = BetterHPConfig.CLIENT.healthDisplayY.get();
+        int healthTextOffset = BetterHPConfig.CLIENT.healthTextOffset.get();
         int armorDisplayX = BetterHPConfig.CLIENT.armorDisplayX.get();
         int armorDisplayY = BetterHPConfig.CLIENT.armorDisplayY.get();
         int hungerDisplayX = BetterHPConfig.CLIENT.hungerDisplayX.get();
@@ -132,18 +133,21 @@ public class HealthDisplayHandler {
         int saturationColor = 0xFFD700;
         int breatheColor = 0x00BFFF;
 
-
         if (showNumericHealth) {
-            String healthText = String.format("%.1f/%.1f", health, maxHealth);
+            String healthText;
+            if (BetterHPConfig.CLIENT.showDecimalHealth.get()) {
+                healthText = String.format("%.1f/%.1f", health, maxHealth);
+            } else {
+                healthText = String.format("%d/%d", (int) health, (int) maxHealth);
+            }
             int healthTextWidth = font.width(healthText);
-            int healthTextOffset = 15;
             drawShadowedText(guiGraphics, font, healthText, centeredHealthX - healthTextWidth / 2 + healthTextOffset, bottomHealthY, textColor);
+
             String absorptionText = absorption > 0 ? "+" + absorption : null;
             if (absorptionText != null) {
                 drawShadowedText(guiGraphics, font, absorptionText, centeredHealthX + healthTextWidth / 2 + healthTextOffset + 5, bottomHealthY, absorptionColor);
             }
         }
-
         if (showNumericHunger) {
             String hungerText = hunger + "/" + 20;
             int hungerTextWidth = font.width(hungerText);
