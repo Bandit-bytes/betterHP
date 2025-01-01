@@ -1,6 +1,5 @@
 package net.bandit.better_hp.config;
 
-import net.minecraft.client.resources.language.I18n;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -27,9 +26,9 @@ public class BetterHPConfig {
         public final ForgeConfigSpec.BooleanValue showHealthIcon;
         public final ForgeConfigSpec.BooleanValue showArmorIcon;
         public final ForgeConfigSpec.BooleanValue showHungerIcon;
+        public final ForgeConfigSpec.IntValue healthTextOffset;
         public final ForgeConfigSpec.IntValue healthDisplayX;
         public final ForgeConfigSpec.IntValue healthDisplayY;
-        public final ForgeConfigSpec.IntValue healthTextOffset;
         public final ForgeConfigSpec.IntValue armorDisplayX;
         public final ForgeConfigSpec.IntValue armorDisplayY;
         public final ForgeConfigSpec.IntValue hungerDisplayX;
@@ -38,107 +37,106 @@ public class BetterHPConfig {
         public final ForgeConfigSpec.IntValue oxygenDisplayY;
         public final ForgeConfigSpec.IntValue healthColor;
         public final ForgeConfigSpec.BooleanValue showDecimalHealth;
+        public final ForgeConfigSpec.BooleanValue showHealthOutline;
 
         public Client(ForgeConfigSpec.Builder builder) {
-            builder.push(translate("config.better_hp.display_settings"));
+            builder.push("Display Settings");
 
             showVanillaHearts = builder
-                    .comment(translate("config.better_hp.show_vanilla_hearts"))
+                    .comment("Show vanilla hearts")
                     .define("showVanillaHearts", false);
-
             showDecimalHealth = builder
-                    .comment(translate("config.better_hp.show_decimal_health"))
+                    .comment("Show health as decimals or whole numbers")
                     .define("showDecimalHealth", true);
 
             showVanillaArmor = builder
-                    .comment(translate("config.better_hp.show_vanilla_armor"))
+                    .comment("Show vanilla armor bar")
                     .define("showVanillaArmor", false);
 
             showVanillaHunger = builder
-                    .comment(translate("config.better_hp.show_vanilla_hunger"))
+                    .comment("Show vanilla hunger bar")
                     .define("showVanillaHunger", false);
 
             showVanillaOxygen = builder
-                    .comment(translate("config.better_hp.show_vanilla_oxygen"))
+                    .comment("Show vanilla oxygen bubbles")
                     .define("showVanillaOxygen", false);
 
             showNumericHunger = builder
-                    .comment(translate("config.better_hp.show_numeric_hunger"))
+                    .comment("Show numeric hunger instead of vanilla hunger bar")
                     .define("showNumericHunger", true);
 
             showOxygenIcon = builder
-                    .comment(translate("config.better_hp.show_oxygen_icon"))
+                    .comment("Show custom oxygen icon when underwater")
                     .define("showOxygenIcon", true);
 
             showNumericHealth = builder
-                    .comment(translate("config.better_hp.show_numeric_health"))
+                    .comment("Show numeric health instead of vanilla health bar")
                     .define("showNumericHealth", true);
 
+            healthTextOffset = builder
+                    .comment("Horizontal offset between the health icon and the numeric health text")
+                    .defineInRange("healthTextOffset", 25, 0, 100);
+
             showNumericOxygen = builder
-                    .comment(translate("config.better_hp.show_numeric_oxygen"))
+                    .comment("Show numeric oxygen value when underwater")
                     .define("showNumericOxygen", true);
 
             showHealthIcon = builder
-                    .comment(translate("config.better_hp.show_health_icon"))
+                    .comment("Show custom health icon")
                     .define("showHealthIcon", true);
 
             showArmorIcon = builder
-                    .comment(translate("config.better_hp.show_armor_icon"))
+                    .comment("Show custom armor icon")
                     .define("showArmorIcon", true);
 
             showHungerIcon = builder
-                    .comment(translate("config.better_hp.show_hunger_icon"))
+                    .comment("Show custom hunger icon")
                     .define("showHungerIcon", true);
 
             enableDynamicHealthColor = builder
-                    .comment(translate("config.better_hp.enable_dynamic_health_color"))
+                    .comment("Enable dynamic health color change (Green -> Full, Yellow -> Low, Red -> Critical)")
                     .define("enableDynamicHealthColor", true);
 
             healthDisplayX = builder
-                    .comment(translate("config.better_hp.health_display_x"))
+                    .comment("Horizontal position of the health icon display")
                     .defineInRange("healthDisplayX", -70, -1000, 1000);
 
             healthDisplayY = builder
-                    .comment(translate("config.better_hp.health_display_y"))
+                    .comment("Vertical position of the health icon display")
                     .defineInRange("healthDisplayY", 43, 0, 1000);
 
-            healthTextOffset = builder
-                    .comment("config.better_hp.healthTextOffset")
-                    .defineInRange("healthTextOffset", 15, 0, 100);
-
             armorDisplayX = builder
-                    .comment(translate("config.better_hp.armor_display_x"))
+                    .comment("Horizontal position of the armor icon display")
                     .defineInRange("armorDisplayX", -70, -1000, 1000);
 
             armorDisplayY = builder
-                    .comment(translate("config.better_hp.armor_display_y"))
+                    .comment("Vertical position of the armor icon display")
                     .defineInRange("armorDisplayY", 60, 0, 1000);
 
             hungerDisplayX = builder
-                    .comment(translate("config.better_hp.hunger_display_x"))
+                    .comment("Horizontal position of the hunger icon display")
                     .defineInRange("hungerDisplayX", 66, -1000, 1000);
 
             hungerDisplayY = builder
-                    .comment(translate("config.better_hp.hunger_display_y"))
+                    .comment("Vertical position of the hunger icon display")
                     .defineInRange("hungerDisplayY", 43, 0, 1000);
 
             oxygenDisplayX = builder
-                    .comment(translate("config.better_hp.oxygen_display_x"))
-                    .defineInRange("oxygenDisplayX", 67, -1000, 1000);
+                    .comment("Horizontal position of the oxygen icon display")
+                    .defineInRange("oxygenDisplayX", 67, -1000, 1000); // Placed above hunger
 
             oxygenDisplayY = builder
-                    .comment(translate("config.better_hp.oxygen_display_y"))
+                    .comment("Vertical position of the oxygen icon display")
                     .defineInRange("oxygenDisplayY", 60, 0, 1000);
 
             healthColor = builder
-                    .comment(translate("config.better_hp.health_color"))
+                    .comment("Color of the health numerical value in the HUD. Use's Decimal color code; Default is Red")
                     .defineInRange("healthColor", 0xFF5555, 0x000000, 0xFFFFFF);
 
-            builder.pop();
-        }
+            builder.comment("Enable or disable black outline around health numerical values.");
+            showHealthOutline = builder.define("showHealthOutline", false);
 
-        private static String translate(String key) {
-            return I18n.get(key);
+            builder.pop();
         }
     }
 }

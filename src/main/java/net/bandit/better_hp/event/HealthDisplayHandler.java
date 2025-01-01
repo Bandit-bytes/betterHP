@@ -21,6 +21,8 @@ public class HealthDisplayHandler {
     private static final ResourceLocation HUNGER_ICON = new ResourceLocation("better_hp", "textures/gui/hunger_icon.png");
     private static final ResourceLocation ARMOR_ICON = new ResourceLocation("better_hp", "textures/gui/armor_icon.png");
     private static final ResourceLocation BREATHE_ICON = new ResourceLocation("better_hp", "textures/gui/breathe_icon.png");
+    private static final ResourceLocation HARDCORE_HEALTH_ICON = new ResourceLocation("better_hp", "textures/gui/hardcore_health_icon.png");
+
 
     private static boolean showVanillaArmor;
     private static boolean showNumericHunger;
@@ -31,6 +33,7 @@ public class HealthDisplayHandler {
     private static boolean showHungerIcon;
     private static boolean showNumericHealth;
     private static boolean enableDynamicColor;
+    private static boolean showHealthOutline;
 
     private static float lastHealth = -1;
     private static float lastMaxHealth = -1;
@@ -56,6 +59,7 @@ public class HealthDisplayHandler {
         showHungerIcon = BetterHPConfig.CLIENT.showHungerIcon.get();
         showNumericHealth = BetterHPConfig.CLIENT.showNumericHealth.get();
         enableDynamicColor = BetterHPConfig.CLIENT.enableDynamicHealthColor.get();
+        showHealthOutline = BetterHPConfig.CLIENT.showHealthOutline.get();
     }
 
     @SubscribeEvent
@@ -141,7 +145,12 @@ public class HealthDisplayHandler {
                 healthText = String.format("%d/%d", (int) health, (int) maxHealth);
             }
             int healthTextWidth = font.width(healthText);
-            drawShadowedText(guiGraphics, font, healthText, centeredHealthX - healthTextWidth / 2 + healthTextOffset, bottomHealthY, textColor);
+
+            if (showHealthOutline) {
+                drawOutlinedText(guiGraphics, font, healthText, centeredHealthX - healthTextWidth / 2 + healthTextOffset, bottomHealthY, textColor);
+            } else {
+                drawShadowedText(guiGraphics, font, healthText, centeredHealthX - healthTextWidth / 2 + healthTextOffset, bottomHealthY, textColor);
+            }
 
             String absorptionText = absorption > 0 ? "+" + absorption : null;
             if (absorptionText != null) {
@@ -167,8 +176,11 @@ public class HealthDisplayHandler {
             drawShadowedText(guiGraphics, font, breatheText, centeredBreatheX - breatheTextWidth / 2, bottomBreatheY, breatheColor);
         }
         if (showHealthIcon) {
-            drawIcon(guiGraphics, HEALTH_ICON, centeredHealthX - 24, bottomHealthY - 4, 16, 16);
+            boolean isHardcore = Minecraft.getInstance().level.getLevelData().isHardcore();
+            ResourceLocation healthIcon = isHardcore ? HARDCORE_HEALTH_ICON : HEALTH_ICON;
+            drawIcon(guiGraphics, healthIcon, centeredHealthX - 24, bottomHealthY - 4, 16, 16);
         }
+
         if (!showVanillaArmor && showArmorIcon) {
             drawIcon(guiGraphics, ARMOR_ICON, centeredArmorX - 24, bottomArmorY - 4, 16, 16);
             drawShadowedText(guiGraphics, font, String.valueOf(armorValue), centeredArmorX, bottomArmorY, armorColor);
@@ -197,4 +209,29 @@ public class HealthDisplayHandler {
     private static void drawShadowedText(GuiGraphics guiGraphics, Font font, String text, int x, int y, int color) {
         guiGraphics.drawString(font, text, x, y, color, true);
     }
+//    private static void drawOutlinedText(GuiGraphics guiGraphics, Font font, String text, int x, int y, int color) {
+//        // Render the black outline by drawing the text multiple times slightly offset
+//        guiGraphics.drawString(font, text, x - 1, y, 0x000000, false); // Left
+//        guiGraphics.drawString(font, text, x + 1, y, 0x000000, false); // Right
+//        guiGraphics.drawString(font, text, x, y - 1, 0x000000, false); // Up
+//        guiGraphics.drawString(font, text, x, y + 1, 0x000000, false); // Down
+//        guiGraphics.drawString(font, text, x - 1, y - 1, 0x000000, false); // Top-Left
+//        guiGraphics.drawString(font, text, x + 1, y - 1, 0x000000, false); // Top-Right
+//        guiGraphics.drawString(font, text, x - 1, y + 1, 0x000000, false); // Bottom-Left
+//        guiGraphics.drawString(font, text, x + 1, y + 1, 0x000000, false); // Bottom-Right
+//
+//        // Render the actual text on top
+//        guiGraphics.drawString(font, text, x, y, color, false);
+//    }
+private static void drawOutlinedText(GuiGraphics guiGraphics, Font font, String text, int x, int y, int color) {
+    // Render the black outline by drawing the text at cardinal directions (no diagonals)
+    guiGraphics.drawString(font, text, x - 1, y, 0x000000, false); // Left
+    guiGraphics.drawString(font, text, x + 1, y, 0x000000, false); // Right
+    guiGraphics.drawString(font, text, x, y - 1, 0x000000, false); // Up
+    guiGraphics.drawString(font, text, x, y + 1, 0x000000, false); // Down
+
+    // Render the actual text on top
+    guiGraphics.drawString(font, text, x, y, color, false);
+}
+
 }
