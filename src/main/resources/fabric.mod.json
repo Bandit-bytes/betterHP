@@ -1,0 +1,40 @@
+{
+	"schemaVersion": 1,
+	"id": "better-hp",
+	"version": "${version}",
+	"name": "Better HP",
+	"description": "Better Render of HP and other player info",
+	"authors": [
+		"Bandit-Bytes"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/better-hp/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"client": [
+			"net.bandit.betterhp_fabric.client.betterhp_fabricClient"
+		],
+		"main": [
+			"net.bandit.betterhp_fabric.BetterHPFabric"
+		],
+		"modmenu": [
+			"net.bandit.betterhp_fabric.config.BetterHpModMenuIntegration"
+		]
+	},
+	"mixins": [
+		"better-hp.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.10",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
