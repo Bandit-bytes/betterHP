@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -21,6 +22,8 @@ public class HealthDisplayHandler {
     private static final ResourceLocation HUNGER_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/hunger_icon.png");
     private static final ResourceLocation ARMOR_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/armor_icon.png");
     private static final ResourceLocation BREATHE_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/breathe_icon.png");
+    private static final ResourceLocation TOUGHNESS_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/toughness_icon.png");
+    private static final ResourceLocation HARDCORE_HEALTH_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/hardcore_health_icon.png");
 
     // Cached configuration variables
     private static boolean showVanillaHearts;
@@ -33,11 +36,14 @@ public class HealthDisplayHandler {
     private static boolean showNumericOxygen;
     private static boolean showHealthIcon;
     private static boolean showArmorIcon;
+    private static boolean showToughnessIcon;
     private static boolean showHungerIcon;
     private static boolean enableDynamicColor;
     private static int healthDisplayX;
     private static int healthDisplayY;
     private static int armorDisplayX;
+    private static int toughnessDisplayX;
+    private static int toughnessDisplayY;
     private static int armorDisplayY;
     private static int hungerDisplayX;
     private static int hungerDisplayY;
@@ -57,12 +63,17 @@ public class HealthDisplayHandler {
         showNumericOxygen = BetterHPConfig.showNumericOxygen.get();
         showHealthIcon = BetterHPConfig.showHealthIcon.get();
         showArmorIcon = BetterHPConfig.showArmorIcon.get();
+        showToughnessIcon = BetterHPConfig.showToughnessIcon.get();
         showHungerIcon = BetterHPConfig.showHungerIcon.get();
         enableDynamicColor = BetterHPConfig.enableDynamicHealthColor.get();
+
+        // Update position values
         healthDisplayX = BetterHPConfig.healthDisplayX.get();
         healthDisplayY = BetterHPConfig.healthDisplayY.get();
         armorDisplayX = BetterHPConfig.armorDisplayX.get();
         armorDisplayY = BetterHPConfig.armorDisplayY.get();
+        toughnessDisplayX = BetterHPConfig.toughnessDisplayX.get();
+        toughnessDisplayY = BetterHPConfig.toughnessDisplayY.get();
         hungerDisplayX = BetterHPConfig.hungerDisplayX.get();
         hungerDisplayY = BetterHPConfig.hungerDisplayY.get();
         oxygenDisplayX = BetterHPConfig.oxygenDisplayX.get();
@@ -70,11 +81,16 @@ public class HealthDisplayHandler {
         healthColor = BetterHPConfig.healthColor.get();
     }
 
+
     // Render the custom HUD
     @SubscribeEvent
     public static void onRenderGuiPost(RenderGuiEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
+
+        if (minecraft.options.hideGui) {
+            return;
+        }
 
         if (player == null || minecraft.gameMode.getPlayerMode() == GameType.CREATIVE || minecraft.gameMode.getPlayerMode() == GameType.SPECTATOR) {
             return;
@@ -88,75 +104,109 @@ public class HealthDisplayHandler {
         int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
         int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
 
+        // Fetch updated values live (instead of relying on cached variables)
+        boolean showHealthIcon = BetterHPConfig.showHealthIcon.get();
+        boolean showArmorIcon = BetterHPConfig.showArmorIcon.get();
+        boolean showToughnessIcon = BetterHPConfig.showToughnessIcon.get();
+        boolean showNumericHealth = BetterHPConfig.showNumericHealth.get();
+        boolean showNumericHunger = BetterHPConfig.showNumericHunger.get();
+        boolean showBreatheIcon = BetterHPConfig.showOxygenIcon.get();
+        boolean showNumericOxygen = BetterHPConfig.showNumericOxygen.get();
+        boolean enableDynamicColor = BetterHPConfig.enableDynamicHealthColor.get();
+
+        int healthX = BetterHPConfig.healthDisplayX.get();
+        int healthY = BetterHPConfig.healthDisplayY.get();
+        int armorX = BetterHPConfig.armorDisplayX.get();
+        int armorY = BetterHPConfig.armorDisplayY.get();
+        int toughnessX = BetterHPConfig.toughnessDisplayX.get();
+        int toughnessY = BetterHPConfig.toughnessDisplayY.get();
+        int hungerX = BetterHPConfig.hungerDisplayX.get();
+        int hungerY = BetterHPConfig.hungerDisplayY.get();
+        int oxygenX = BetterHPConfig.oxygenDisplayX.get();
+        int oxygenY = BetterHPConfig.oxygenDisplayY.get();
+
         float health = player.getHealth();
         float maxHealth = player.getMaxHealth();
-        int absorption = (int) player.getAbsorptionAmount();  // Absorption value
-        int saturation = (int) player.getFoodData().getSaturationLevel();  // Saturation level
+        int absorption = (int) player.getAbsorptionAmount();
+        int toughnessValue = (int) player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS).getValue();
         int armorValue = player.getArmorValue();
         int hunger = player.getFoodData().getFoodLevel();
+        int saturation = (int) player.getFoodData().getSaturationLevel();
         int air = player.getAirSupply();
         int maxAir = player.getMaxAirSupply();
 
-        int healthTextColor = enableDynamicColor ? getDynamicHealthColor(health, maxHealth) : healthColor;
+        int healthTextColor = enableDynamicColor ? getDynamicHealthColor(health, maxHealth) : BetterHPConfig.healthColor.get();
 
-        // Render Health
-        drawHealth(guiGraphics, health, maxHealth, healthTextColor, screenWidth, screenHeight);
-        drawArmor(guiGraphics, armorValue, screenWidth, screenHeight);
-        drawHunger(guiGraphics, hunger, screenWidth, screenHeight);
-        drawOxygen(guiGraphics, air, maxAir, screenWidth, screenHeight);
-        drawAbsorption(guiGraphics, absorption, screenWidth, screenHeight);
-        drawSaturation(guiGraphics, saturation, screenWidth, screenHeight);
+        // Render HUD Elements
+        drawHealth(guiGraphics, health, maxHealth, healthTextColor, screenWidth, screenHeight, healthX, healthY, showHealthIcon, showNumericHealth);
+        drawArmor(guiGraphics, armorValue, screenWidth, screenHeight, armorX, armorY, showArmorIcon);
+        drawToughness(guiGraphics, toughnessValue, screenWidth, screenHeight, toughnessX, toughnessY, showToughnessIcon);
+        drawHunger(guiGraphics, hunger, screenWidth, screenHeight, hungerX, hungerY, showHungerIcon, showNumericHunger);
+        drawOxygen(guiGraphics, air, maxAir, screenWidth, screenHeight, oxygenX, oxygenY, showBreatheIcon, showNumericOxygen);
+        drawAbsorption(guiGraphics, absorption, screenWidth, screenHeight, healthX, healthY);
+        drawSaturation(guiGraphics, saturation, screenWidth, screenHeight, hungerX, hungerY);
     }
 
+    // Render Methods
+    private static void drawHealth(GuiGraphics guiGraphics, float health, float maxHealth, int textColor, int screenWidth, int screenHeight, int x, int y, boolean showIcon, boolean showNumeric) {
+        ResourceLocation healthIcon = Minecraft.getInstance().level != null && Minecraft.getInstance().level.getLevelData().isHardcore() ? HARDCORE_HEALTH_ICON : HEALTH_ICON;
 
-    private static void drawHealth(GuiGraphics guiGraphics, float health, float maxHealth, int textColor, int screenWidth, int screenHeight) {
-        if (showNumericHealth) {
-            String healthText = String.format("%d/%d", (int) health, (int) maxHealth);
-            guiGraphics.drawString(Minecraft.getInstance().font, healthText, (screenWidth / 2) + healthDisplayX, screenHeight - healthDisplayY, textColor);
+        if (showIcon) {
+            drawIcon(guiGraphics, healthIcon, (screenWidth / 2) + x - 24, screenHeight - y - 4, 16, 16);
         }
-        if (showHealthIcon) {
-            drawIcon(guiGraphics, HEALTH_ICON, (screenWidth / 2) + healthDisplayX - 24, screenHeight - healthDisplayY - 4, 16, 16);
-        }
-    }
-
-    private static void drawArmor(GuiGraphics guiGraphics, int armorValue, int screenWidth, int screenHeight) {
-        if (showArmorIcon) {
-            drawIcon(guiGraphics, ARMOR_ICON, (screenWidth / 2) + armorDisplayX - 24, screenHeight - armorDisplayY - 4, 16, 16);
-            drawShadowedText(guiGraphics, Minecraft.getInstance().font, String.valueOf(armorValue), (screenWidth / 2) + armorDisplayX, screenHeight - armorDisplayY, 0xAAAAAA);
+        if (showNumeric) {
+            guiGraphics.drawString(Minecraft.getInstance().font, String.format("%d/%d", (int) health, (int) maxHealth), (screenWidth / 2) + x, screenHeight - y, textColor);
         }
     }
 
-    private static void drawHunger(GuiGraphics guiGraphics, int hunger, int screenWidth, int screenHeight) {
-        if (showNumericHunger) {
-            drawShadowedText(guiGraphics, Minecraft.getInstance().font, hunger + "/20", (screenWidth / 2) + hungerDisplayX - 10, screenHeight - hungerDisplayY, 0xFF7518);
-        }
-        if (showHungerIcon) {
-            drawIcon(guiGraphics, HUNGER_ICON, (screenWidth / 2) + hungerDisplayX + 18, screenHeight - hungerDisplayY - 4, 16, 16);
+    private static void drawArmor(GuiGraphics guiGraphics, int armorValue, int screenWidth, int screenHeight, int x, int y, boolean showIcon) {
+        if (showIcon) {
+            drawIcon(guiGraphics, ARMOR_ICON, (screenWidth / 2) + x - 24, screenHeight - y - 4, 16, 16);
+            drawShadowedText(guiGraphics, Minecraft.getInstance().font, String.valueOf(armorValue), (screenWidth / 2) + x, screenHeight - y, 0xAAAAAA);
         }
     }
 
-    private static void drawOxygen(GuiGraphics guiGraphics, int air, int maxAir, int screenWidth, int screenHeight) {
-        if (showNumericOxygen && air < maxAir) {
-            drawShadowedText(guiGraphics, Minecraft.getInstance().font, (air / 20) + "/" + (maxAir / 20), (screenWidth / 2) + oxygenDisplayX - 10, screenHeight - oxygenDisplayY, 0x00BFFF);
-        }
-        if (showBreatheIcon && air < maxAir) {
-            drawIcon(guiGraphics, BREATHE_ICON, (screenWidth / 2) + oxygenDisplayX + 18, screenHeight - oxygenDisplayY - 4, 16, 16);
+    private static void drawToughness(GuiGraphics guiGraphics, int toughnessValue, int screenWidth, int screenHeight, int x, int y, boolean showIcon) {
+        if (showIcon) {
+            drawIcon(guiGraphics, TOUGHNESS_ICON, (screenWidth / 2) + x - 24, screenHeight - y - 4, 16, 16);
+            drawShadowedText(guiGraphics, Minecraft.getInstance().font, String.valueOf(toughnessValue), (screenWidth / 2) + x, screenHeight - y, 0xADD8E6);
         }
     }
 
-    private static void drawAbsorption(GuiGraphics guiGraphics, int absorption, int screenWidth, int screenHeight) {
+    private static void drawHunger(GuiGraphics guiGraphics, int hunger, int screenWidth, int screenHeight, int x, int y, boolean showIcon, boolean showNumeric) {
+        Minecraft mc = Minecraft.getInstance();
+        Font font = mc.font;
+
+        String hungerText = hunger + "/20";
+        int textWidth = font.width(hungerText);
+
+        if (showNumeric) {
+            drawShadowedText(guiGraphics, font, hungerText, (screenWidth / 2) + x, screenHeight - y, 0xFF7518);
+        }
+        if (showIcon) {
+
+            drawIcon(guiGraphics, HUNGER_ICON, (screenWidth / 2) + x + textWidth , screenHeight - y - 4, 16, 16);
+        }
+    }
+
+    private static void drawOxygen(GuiGraphics guiGraphics, int air, int maxAir, int screenWidth, int screenHeight, int x, int y, boolean showIcon, boolean showNumeric) {
+        if (showNumeric && air < maxAir) {
+            drawShadowedText(guiGraphics, Minecraft.getInstance().font, (air / 20) + "/" + (maxAir / 20), (screenWidth / 2) + x - 10, screenHeight - y, 0x00BFFF);
+        }
+        if (showIcon && air < maxAir) {
+            drawIcon(guiGraphics, BREATHE_ICON, (screenWidth / 2) + x + 18, screenHeight - y - 4, 16, 16);
+        }
+    }
+
+    private static void drawAbsorption(GuiGraphics guiGraphics, int absorption, int screenWidth, int screenHeight, int x, int y) {
         if (absorption > 0) {
-            String absorptionText = "+" + absorption;
-            // Shift absorption display to the right
-            drawShadowedText(guiGraphics, Minecraft.getInstance().font, absorptionText, (screenWidth / 2) + healthDisplayX + 40, screenHeight - healthDisplayY, 0xFFFF00);
+            drawShadowedText(guiGraphics, Minecraft.getInstance().font, "+" + absorption, (screenWidth / 2) + x + 40, screenHeight - y, 0xFFFF00);
         }
     }
 
-    private static void drawSaturation(GuiGraphics guiGraphics, int saturation, int screenWidth, int screenHeight) {
+    private static void drawSaturation(GuiGraphics guiGraphics, int saturation, int screenWidth, int screenHeight, int x, int y) {
         if (saturation > 0) {
-            String saturationText = "+" + saturation;
-            // Shift saturation display to the right
-            drawShadowedText(guiGraphics, Minecraft.getInstance().font, saturationText, (screenWidth / 2) + hungerDisplayX + 40, screenHeight - hungerDisplayY, 0xFFD700);
+            drawShadowedText(guiGraphics, Minecraft.getInstance().font, "+" + saturation, (screenWidth / 2) + x + 46, screenHeight - y, 0xFFD700);
         }
     }
 

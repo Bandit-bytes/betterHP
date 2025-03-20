@@ -75,15 +75,28 @@ public class BetterHPConfig {
 
     public static final ModConfigSpec.IntValue armorDisplayX = CLIENT_BUILDER
             .comment("Horizontal position of the armor icon display")
-            .defineInRange("armorDisplayX", -70, -1000, 1000);
+            .defineInRange("armorDisplayX", -5, -1000, 1000);
 
     public static final ModConfigSpec.IntValue armorDisplayY = CLIENT_BUILDER
             .comment("Vertical position of the armor icon display")
-            .defineInRange("armorDisplayY", 60, 0, 1000);
+            .defineInRange("armorDisplayY", 50, 0, 1000);
+
+    public static final ModConfigSpec.BooleanValue showToughnessIcon = CLIENT_BUILDER
+            .comment("Show custom toughness icon")
+            .define("showToughnessIcon", true);
+
+    public static final ModConfigSpec.IntValue toughnessDisplayX = CLIENT_BUILDER
+            .comment("Horizontal position of the toughness icon display")
+            .defineInRange("toughnessDisplayX", 35, -1000, 1000);
+
+    public static final ModConfigSpec.IntValue toughnessDisplayY = CLIENT_BUILDER
+            .comment("Vertical position of the toughness icon display")
+            .defineInRange("toughnessDisplayY", 50, 0, 1000);
+
 
     public static final ModConfigSpec.IntValue hungerDisplayX = CLIENT_BUILDER
             .comment("Horizontal position of the hunger icon display")
-            .defineInRange("hungerDisplayX", 66, -1000, 1000);
+            .defineInRange("hungerDisplayX", 45, -1000, 1000);
 
     public static final ModConfigSpec.IntValue hungerDisplayY = CLIENT_BUILDER
             .comment("Vertical position of the hunger icon display")
@@ -110,6 +123,9 @@ public class BetterHPConfig {
     public static boolean dynamicHealthColor;
     public static int healthX, healthY;
     public static int armorX, armorY;
+    public static boolean toughnessIconEnabled;
+    public static int toughnessX, toughnessY;
+
 
     // Event to load the config values
     @SubscribeEvent
@@ -129,6 +145,9 @@ public class BetterHPConfig {
         healthY = healthDisplayY.get();
         armorX = armorDisplayX.get();
         armorY = armorDisplayY.get();
+        toughnessIconEnabled = showToughnessIcon.get();
+        toughnessX = toughnessDisplayX.get();
+        toughnessY = toughnessDisplayY.get();
     }
 
     // Method to reload config dynamically
