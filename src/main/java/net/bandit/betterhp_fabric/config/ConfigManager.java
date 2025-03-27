@@ -114,7 +114,7 @@ public class ConfigManager {
     public static int armorDisplayY() { return configData != null ? configData.armorDisplayY : 60; }
     public static int toughnessDisplayX() { return configData != null ? configData.toughnessDisplayX : 35; }
     public static int toughnessDisplayY() { return configData != null ? configData.toughnessDisplayY : 0; }
-    public static int breatheDisplayX() { return configData != null ? configData.breatheDisplayX : 67; }
+    public static int breatheDisplayX() { return configData != null ? configData.breatheDisplayX : 90; }
     public static int breatheDisplayY() { return configData != null ? configData.breatheDisplayY : 60; }
     public static boolean showSaturation() { return configData != null && configData.showSaturation; }
     public static int saturationDisplayX() { return configData != null ? configData.saturationDisplayX : 15; }
@@ -144,17 +144,17 @@ public class ConfigManager {
         public boolean showNumericOxygen = true;
         public boolean showSaturation = true;
 
-        int healthDisplayX = -70;
+        int healthDisplayX = -85;
         int healthDisplayY = 43;
-        int hungerDisplayX = 66;
+        int hungerDisplayX = 90;
         int hungerDisplayY = 43;
         int armorDisplayX = -10;
-        int armorDisplayY = 60;
+        int armorDisplayY = 45;
         int toughnessDisplayX = 35;
         int toughnessDisplayY = 0;
-        int breatheDisplayX = 67;
+        int breatheDisplayX = 90;
         int breatheDisplayY = 60;
-        int saturationDisplayX = 15;
+        int saturationDisplayX = 40;
         int saturationDisplayY = 43;
     }
 }

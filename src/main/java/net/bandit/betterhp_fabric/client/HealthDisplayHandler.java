@@ -67,22 +67,18 @@ public class HealthDisplayHandler implements HudRenderCallback {
         int saturationPosX = screenWidth / 2 + ConfigManager.saturationDisplayX();
         int saturationPosY = screenHeight - ConfigManager.saturationDisplayY();
 
-// Render saturation
-        minecraft.getProfiler().push("betterhp_saturationIcon");
-        if (ConfigManager.showSaturation() && saturation > 0) {
-            String saturationText = "+" + saturation;
-            drawShadowedText(guiGraphics, minecraft, saturationText, saturationPosX, saturationPosY, 0xFFD700);
-        }
-        minecraft.getProfiler().pop();
-
-
-
         // Render health
         minecraft.getProfiler().push("betterhp_healthIcon");
         if (ConfigManager.showHealthIcon()) {
             ResourceLocation icon = isHardcore ? HARDCORE_HEALTH_ICON : HEALTH_ICON;
             renderIcon(guiGraphics, icon, healthPosX - 18, healthPosY - 4);
-            drawShadowedText(guiGraphics, minecraft, health + "/" + maxHealth, healthPosX, healthPosY, healthColor);
+            int shakeOffset = 0;
+            if ((float) health / maxHealth < 0.2f) {
+                shakeOffset = (int) (Math.sin(player.tickCount * 0.6f) * 2); // subtle horizontal shake
+            }
+
+            drawShadowedText(guiGraphics, minecraft, health + "/" + maxHealth, healthPosX + shakeOffset, healthPosY, healthColor);
+
             if (absorption > 0) {
                 int healthTextWidth = minecraft.font.width(health + "/" + maxHealth);
                 drawShadowedText(guiGraphics, minecraft, "+" + absorption, healthPosX + healthTextWidth + 3, healthPosY, 0xFFFF00);
@@ -103,7 +99,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
 
         minecraft.getProfiler().push("betterhp_saturationText");
         if (ConfigManager.showSaturation() && saturation > 0) {
-            String saturationText = "+" + saturation;
+            String saturationText = saturation + "+";
             drawShadowedText(guiGraphics, minecraft, saturationText, saturationPosX, saturationPosY, 0xFFD700);
         }
         minecraft.getProfiler().pop();
@@ -150,21 +146,70 @@ public class HealthDisplayHandler implements HudRenderCallback {
         guiGraphics.drawString(minecraft.font, text, x, y, color, true);
     }
 
-    private int determineHealthColor(Player player) {
-        if (player.hasEffect(MobEffects.POISON)) return 0x00FF00;
-        if (player.hasEffect(MobEffects.WITHER)) return 0x707070;
+    private int interpolateColor(float ratio, int colorStart, int colorEnd) {
+        int r1 = (colorStart >> 16) & 0xFF;
+        int g1 = (colorStart >> 8) & 0xFF;
+        int b1 = colorStart & 0xFF;
 
-        int health = Mth.ceil(player.getHealth());
-        int maxHealth = Mth.ceil(player.getMaxHealth());
+        int r2 = (colorEnd >> 16) & 0xFF;
+        int g2 = (colorEnd >> 8) & 0xFF;
+        int b2 = colorEnd & 0xFF;
 
-        if (health > maxHealth * 0.75) return 0x00FF00;
-        if (health > maxHealth * 0.25) return 0xFFFF00;
-        return 0xFF0000;
+        int r = (int) (r1 + (r2 - r1) * ratio);
+        int g = (int) (g1 + (g2 - g1) * ratio);
+        int b = (int) (b1 + (b2 - b1) * ratio);
+
+        return (r << 16) | (g << 8) | b;
     }
+
+//    private int determineHealthColor(Player player) {
+//        if (player.hasEffect(MobEffects.POISON)) return 0x00FF00;
+//        if (player.hasEffect(MobEffects.WITHER)) return 0x707070;
+//
+//        float health = player.getHealth();
+//        float maxHealth = player.getMaxHealth();
+//        float ratio = health / maxHealth;
+//
+//        if (ratio > 0.5f) {
+//            // Interpolate Green → Yellow
+//            return interpolateColor((1.0f - ratio) * 2f, 0x00FF00, 0xFFFF00);
+//        } else {
+//            // Interpolate Yellow → Red
+//            return interpolateColor((0.5f - ratio) * 2f, 0xFFFF00, 0xFF0000);
+//        }
+//    }
+
+    private int determineHealthColor(Player player) {
+        if (player.hasEffect(MobEffects.POISON)) return 0x9ACD32;
+        if (player.hasEffect(MobEffects.WITHER)) return 0x403030;
+
+        float health = player.getHealth();
+        float maxHealth = player.getMaxHealth();
+        float ratio = health / maxHealth;
+
+        if (ratio < 0.2f) {
+            float pulse = (float)(Math.sin(player.tickCount * 0.3f) * 0.5f + 0.5f);
+            return interpolateColor(pulse, 0x800000, 0xFF0000);
+        }
+
+        if (ratio > 0.5f) {
+            return interpolateColor((1.0f - ratio) * 2f, 0x00FF00, 0xFFFF00); // Green -> Yellow
+        } else {
+            return interpolateColor((0.5f - ratio) * 2f, 0xFFFF00, 0xFF0000); // Yellow -> Red
+        }
+    }
+
 
     private int determineHungerColor(int hunger, int maxHunger) {
-        if (hunger > maxHunger * 0.75) return 0xFF8C00;
-        if (hunger > maxHunger * 0.25) return 0xFFFF00;
-        return 0xFF4500;
+        float ratio = (float) hunger / maxHunger;
+
+        if (ratio > 0.5f) {
+            // Yellow → Orange
+            return interpolateColor((1.0f - ratio) * 2f, 0xFFFF00, 0xFFA500);
+        } else {
+            // Orange → Red
+            return interpolateColor((0.5f - ratio) * 2f, 0xFFA500, 0xFF4500);
+        }
     }
+
 }
