@@ -1,0 +1,19 @@
+{
+    "config.betterhp.title": "BetterHP 配置",
+    "config.betterhp.category.general": "通用设置",
+    "config.betterhp.renderVanillaHud": "渲染原版HUD",
+    "config.betterhp.showHealthIcon": "显示生命值图标",
+    "config.betterhp.healthDisplayX": "生命值显示X位置",
+    "config.betterhp.healthDisplayY": "生命值显示Y位置",
+    "config.betterhp.showArmorIcon": "显示护甲图标",
+    "config.betterhp.armorDisplayX": "护甲显示X位置",
+    "config.betterhp.armorDisplayY": "护甲显示Y位置",
+    "config.betterhp.showHungerIcon": "显示饥饿图标",
+    "config.betterhp.hungerDisplayX": "饥饿显示X位置",
+    "config.betterhp.hungerDisplayY": "饥饿显示Y位置",
+    "config.betterhp.showBreatheIcon": "显示氧气图标",
+    "config.betterhp.breatheDisplayX": "氧气显示X位置",
+    "config.betterhp.breatheDisplayY": "氧气显示Y位置",
+    "config.betterhp.showNumericHunger": "显示数值饥饿",
+    "config.betterhp.showNumericOxygen": "显示数值氧气"
+}

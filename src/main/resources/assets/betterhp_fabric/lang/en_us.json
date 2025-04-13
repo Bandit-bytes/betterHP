@@ -9,10 +9,13 @@
   "config.betterhp.armorDisplayX": "Armor Display X Position",
   "config.betterhp.armorDisplayY": "Armor Display Y Position",
   "config.betterhp.showHungerIcon": "Show Hunger Icon",
+  "config.betterhp.showToughnessIcon": "Show Toughness Icon",
   "config.betterhp.hungerDisplayX": "Hunger Display X Position",
   "config.betterhp.hungerDisplayY": "Hunger Display Y Position",
   "config.betterhp.showBreatheIcon": "Show Oxygen Icon",
   "config.betterhp.breatheDisplayX": "Oxygen Display X Position",
+  "config.betterhp.toughnessDisplayX": "Toughness Display X Position",
+  "config.betterhp.toughnessDisplayY": "Toughness Display Y Position",
   "config.betterhp.breatheDisplayY": "Oxygen Display Y Position",
   "config.betterhp.showNumericHunger": "Show Numeric Hunger",
   "config.betterhp.showNumericOxygen": "Show Numeric Oxygen"

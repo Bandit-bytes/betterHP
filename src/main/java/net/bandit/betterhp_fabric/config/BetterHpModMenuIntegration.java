@@ -154,6 +154,33 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                     ConfigManager.saveConfig();
                 })
                 .build());
+        // Show Toughness Icon Toggle
+        general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.betterhp.showToughnessIcon"), ConfigManager.showToughnessIcon())
+                .setDefaultValue(true)
+                .setSaveConsumer(newValue -> {
+                    ConfigManager.getConfigData().showToughnessIcon = newValue;
+                    ConfigManager.saveConfig();
+                })
+                .build());
+
+// Toughness Display X
+        general.addEntry(entryBuilder.startIntField(Text.translatable("config.betterhp.toughnessDisplayX"), ConfigManager.toughnessDisplayX())
+                .setDefaultValue(30)
+                .setSaveConsumer(newValue -> {
+                    ConfigManager.getConfigData().toughnessDisplayX = newValue;
+                    ConfigManager.saveConfig();
+                })
+                .build());
+
+// Toughness Display Y
+        general.addEntry(entryBuilder.startIntField(Text.translatable("config.betterhp.toughnessDisplayY"), ConfigManager.toughnessDisplayY())
+                .setDefaultValue(0)
+                .setSaveConsumer(newValue -> {
+                    ConfigManager.getConfigData().toughnessDisplayY = newValue;
+                    ConfigManager.saveConfig();
+                })
+                .build());
+
 
         builder.setSavingRunnable(ConfigManager::saveConfig);
         return builder.build();

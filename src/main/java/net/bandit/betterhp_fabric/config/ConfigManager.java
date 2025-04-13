@@ -14,46 +14,41 @@ public class ConfigManager {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final File CONFIG_FILE = new File(FabricLoader.getInstance().getConfigDir().toFile(), "betterhp_config.json");
-
-    // Static instance of configData to hold the current configuration
     private static ConfigData configData;
-
-    // Timestamp for last modification to avoid rapid reloading
     private static long lastModified = 0;
 
     static {
-        loadConfig(); // Load the config on startup
-        watchConfigFile(); // Watch for changes
+        loadConfig();
+        watchConfigFile();
     }
 
     public static void loadConfig() {
         if (!CONFIG_FILE.exists()) {
             System.out.println("Configuration file does not exist. Creating new config with default values.");
-            configData = new ConfigData(); // Initialize with default values
-            saveConfig(); // Save default config if file doesn't exist
+            configData = new ConfigData();
+            saveConfig();
         } else {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {
                 configData = GSON.fromJson(reader, ConfigData.class);
                 if (configData == null) {
-                    throw new IOException("Config file contains invalid data."); // Throw exception on invalid data
+                    throw new IOException("Config file contains invalid data.");
                 }
                 System.out.println("Configuration loaded from " + CONFIG_FILE.getName());
             } catch (IOException e) {
                 System.err.println("Error reading configuration file: " + e.getMessage());
-                configData = new ConfigData(); // Default to in-memory defaults on error
-                saveConfig(); // Save default config to correct corrupted file
+                configData = new ConfigData();
+//                saveConfig();
             }
         }
     }
 
-    // Debounce save to prevent rapid saves
     private static long lastSaveTime = 0;
-    private static final long SAVE_COOLDOWN_MS = 500; // 500ms cooldown
+    private static final long SAVE_COOLDOWN_MS = 500;
 
     public static void saveConfig() {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastSaveTime < SAVE_COOLDOWN_MS) {
-            return; // Too soon to save again
+            return;
         }
 
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
@@ -65,8 +60,6 @@ public class ConfigManager {
             System.err.println("Error saving configuration file: " + e.getMessage());
         }
     }
-
-    // Watch the config file for changes and reload the config when modified
     private static void watchConfigFile() {
         try {
             Path configPath = CONFIG_FILE.toPath();
@@ -110,6 +103,9 @@ public class ConfigManager {
     public static boolean showBreatheIcon() { return configData != null && configData.showBreatheIcon; }
     public static boolean showNumericHunger() { return configData != null && configData.showNumericHunger; }
     public static boolean showNumericOxygen() { return configData != null && configData.showNumericOxygen; }
+    public static boolean showToughnessIcon() { return configData != null && configData.showToughnessIcon; }
+    public static int toughnessDisplayX() { return configData != null ? configData.toughnessDisplayX : 0; }
+    public static int toughnessDisplayY() { return configData != null ? configData.toughnessDisplayY : 16; }
     public static int healthDisplayX() { return configData != null ? configData.healthDisplayX : -76; }
     public static int healthDisplayY() { return configData != null ? configData.healthDisplayY : 44; }
     public static int hungerDisplayX() { return configData != null ? configData.hungerDisplayX : 24; }
@@ -119,10 +115,9 @@ public class ConfigManager {
     public static int breatheDisplayX() { return configData != null ? configData.breatheDisplayX : 24; }
     public static int breatheDisplayY() { return configData != null ? configData.breatheDisplayY : 60; }
 
-    // Getter and setter for configData
     public static ConfigData getConfigData() {
         if (configData == null) {
-            loadConfig();  // Ensure config is loaded
+            loadConfig();
         }
         return configData;
     }
@@ -131,13 +126,13 @@ public class ConfigManager {
         configData = newConfigData;
     }
 
-    // Inner class to hold the configuration data
     public static class ConfigData {
         boolean renderVanillaHud = false;
         boolean showHealthIcon = true;
         boolean showArmorIcon = true;
         boolean showHungerIcon = true;
         boolean showBreatheIcon = true;
+        boolean showToughnessIcon = true;
         public boolean showNumericHunger = true;
         public boolean showNumericOxygen = true;
         int healthDisplayX = -70;
@@ -148,5 +143,7 @@ public class ConfigManager {
         int armorDisplayY = 60;
         int breatheDisplayX = 67;
         int breatheDisplayY = 60;
+        int toughnessDisplayX = 30;
+        int toughnessDisplayY = 0;
     }
 }
