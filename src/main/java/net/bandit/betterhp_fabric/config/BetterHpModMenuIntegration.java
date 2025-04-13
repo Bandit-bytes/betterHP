@@ -14,12 +14,9 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
         return this::createConfigScreen;
     }
-
-    // Create the configuration screen
     public Screen createConfigScreen(Screen parent) {
-        // Ensure configData is loaded
         if (ConfigManager.getConfigData() == null) {
-            ConfigManager.loadConfig();  // Load config data if it's not already loaded
+            ConfigManager.loadConfig();
         }
 
         ConfigBuilder builder = ConfigBuilder.create()
@@ -46,6 +43,15 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 })
                 .build());
 
+        general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.betterhp.showHealthValue"), ConfigManager.showHealthValue())
+                .setDefaultValue(true)
+                .setSaveConsumer(newValue -> {
+                    ConfigManager.getConfigData().showHealthValue = newValue;
+                    ConfigManager.saveConfig();
+                })
+                .build());
+
+
         general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.betterhp.showHungerIcon"), ConfigManager.showHungerIcon())
                 .setDefaultValue(true)
                 .setSaveConsumer(newValue -> {
@@ -53,10 +59,10 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                     ConfigManager.saveConfig();
                 })
                 .build());
-        general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.betterhp.showNumericHunger"), ConfigManager.getConfigData().showNumericHunger)
+        general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.betterhp.showNumericHunger"), ConfigManager.getConfigData().showHungerValue)
                 .setDefaultValue(true)
                 .setSaveConsumer(newValue -> {
-                    ConfigManager.getConfigData().showNumericHunger = newValue;
+                    ConfigManager.getConfigData().showHungerValue = newValue;
                     ConfigManager.saveConfig();
                 })
                 .build());
@@ -70,6 +76,23 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 })
                 .build());
 
+        general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.betterhp.showArmorValue"), ConfigManager.showArmorValue())
+                .setDefaultValue(true)
+                .setSaveConsumer(newValue -> {
+                    ConfigManager.getConfigData().showArmorValue = newValue;
+                    ConfigManager.saveConfig();
+                })
+                .build());
+
+        general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.betterhp.showToughnessValue"), ConfigManager.showToughnessValue())
+                .setDefaultValue(true)
+                .setSaveConsumer(newValue -> {
+                    ConfigManager.getConfigData().showToughnessValue = newValue;
+                    ConfigManager.saveConfig();
+                })
+                .build());
+
+
         general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.betterhp.showBreatheIcon"), ConfigManager.showBreatheIcon())
                 .setDefaultValue(true)
                 .setSaveConsumer(newValue -> {
@@ -77,10 +100,11 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                     ConfigManager.saveConfig();
                 })
                 .build());
-        general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.betterhp.showNumericOxygen"), ConfigManager.getConfigData().showNumericOxygen)
+
+        general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.betterhp.showOxygenValue"), ConfigManager.showOxygenValue())
                 .setDefaultValue(true)
                 .setSaveConsumer(newValue -> {
-                    ConfigManager.getConfigData().showNumericOxygen = newValue;
+                    ConfigManager.getConfigData().showOxygenValue = newValue;
                     ConfigManager.saveConfig();
                 })
                 .build());
@@ -180,6 +204,42 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                     ConfigManager.saveConfig();
                 })
                 .build());
+        // Toggle for static health color
+        general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.betterhp.useStaticHealthColor"), ConfigManager.useStaticHealthColor())
+                .setDefaultValue(false)
+                .setSaveConsumer(newValue -> {
+                    ConfigManager.getConfigData().useStaticHealthColor = newValue;
+                    ConfigManager.saveConfig();
+                })
+                .build());
+
+// Health color picker
+        general.addEntry(entryBuilder.startColorField(Text.translatable("config.betterhp.staticHealthColor"), ConfigManager.staticHealthColor())
+                .setDefaultValue(0xFF0000)
+                .setSaveConsumer(newValue -> {
+                    ConfigManager.getConfigData().staticHealthColor = newValue;
+                    ConfigManager.saveConfig();
+                })
+                .build());
+
+// Toggle for static hunger color
+        general.addEntry(entryBuilder.startBooleanToggle(Text.translatable("config.betterhp.useStaticHungerColor"), ConfigManager.useStaticHungerColor())
+                .setDefaultValue(false)
+                .setSaveConsumer(newValue -> {
+                    ConfigManager.getConfigData().useStaticHungerColor = newValue;
+                    ConfigManager.saveConfig();
+                })
+                .build());
+
+// Hunger color picker
+        general.addEntry(entryBuilder.startColorField(Text.translatable("config.betterhp.staticHungerColor"), ConfigManager.staticHungerColor())
+                .setDefaultValue(0xFFA500)
+                .setSaveConsumer(newValue -> {
+                    ConfigManager.getConfigData().staticHungerColor = newValue;
+                    ConfigManager.saveConfig();
+                })
+                .build());
+
 
 
         builder.setSavingRunnable(ConfigManager::saveConfig);

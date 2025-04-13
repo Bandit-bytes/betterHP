@@ -60,6 +60,8 @@ public class HealthDisplayHandler implements HudRenderCallback {
         if (ConfigManager.showHealthIcon()) {
             Identifier icon = isHardcore ? HARDCORE_HEALTH_ICON : HEALTH_ICON;
             renderIcon(context, icon, healthPosX - 18, healthPosY - 4);
+        }
+        if (ConfigManager.showHealthValue()) {
             int shakeOffset = (float) health / maxHealth < 0.2f ? (int) (Math.sin(player.age * 0.6f) * 2) : 0;
             drawShadowedText(context, client, health + "/" + maxHealth, healthPosX + shakeOffset, healthPosY, healthColor);
 
@@ -72,44 +74,52 @@ public class HealthDisplayHandler implements HudRenderCallback {
 
         client.getProfiler().push("betterhp_hungerIcon");
         if (ConfigManager.showHungerIcon()) {
-            String hungerText = hunger + "/20";
-            if (ConfigManager.getConfigData().showNumericHunger) {
-                drawShadowedText(context, client, hungerText, hungerPosX - client.textRenderer.getWidth(hungerText), hungerPosY, hungerColor);
-            }
             renderIcon(context, HUNGER_ICON, hungerPosX, hungerPosY - 4);
+        }
+        if (ConfigManager.showHungerValue()) {
+            String hungerText = hunger + "/20";
+            drawShadowedText(context, client, hungerText, hungerPosX - client.textRenderer.getWidth(hungerText), hungerPosY, hungerColor);
         }
         client.getProfiler().pop();
 
         client.getProfiler().push("betterhp_armorIcon");
         if (ConfigManager.showArmorIcon()) {
             renderIcon(context, ARMOR_ICON, armorPosX - 18, armorPosY - 4);
+        }
+        if (ConfigManager.showArmorValue()) {
             drawShadowedText(context, client, String.valueOf(armorValue), armorPosX, armorPosY, 0xFFFFFF);
         }
         client.getProfiler().pop();
 
         client.getProfiler().push("betterhp_toughnessIcon");
-        if (ConfigManager.showToughnessIcon()) {
+        if (ConfigManager.showToughnessIcon() || ConfigManager.showToughnessValue()) {
             int toughness = (int) player.getAttributeValue(EntityAttributes.GENERIC_ARMOR_TOUGHNESS);
             int toughnessPosX = armorPosX + ConfigManager.toughnessDisplayX();
             int toughnessPosY = armorPosY + ConfigManager.toughnessDisplayY();
 
-            renderIcon(context, TOUGHNESS_ICON, toughnessPosX - 18, toughnessPosY - 4);
-            drawShadowedText(context, client, String.valueOf(toughness), toughnessPosX, toughnessPosY, 0xADD8E6);
+            if (ConfigManager.showToughnessIcon()) {
+                renderIcon(context, TOUGHNESS_ICON, toughnessPosX - 18, toughnessPosY - 4);
+            }
+            if (ConfigManager.showToughnessValue()) {
+                drawShadowedText(context, client, String.valueOf(toughness), toughnessPosX, toughnessPosY, 0xADD8E6);
+            }
         }
         client.getProfiler().pop();
 
         client.getProfiler().push("betterhp_breatheIcon");
-        if (ConfigManager.showBreatheIcon() && (player.isSubmergedInWater() || air < maxAir)) {
+        if (player.isSubmergedInWater() || air < maxAir) {
             String breatheText = (air / 20) + "/" + (maxAir / 20);
-            if (ConfigManager.getConfigData().showNumericOxygen) {
+
+            if (ConfigManager.showBreatheIcon()) {
+                renderIcon(context, BREATHE_ICON, breathePosX, breathePosY - 4);
+            }
+            if (ConfigManager.showOxygenValue()) {
                 drawShadowedText(context, client, breatheText, breathePosX - client.textRenderer.getWidth(breatheText), breathePosY, breatheColor);
             }
-            renderIcon(context, BREATHE_ICON, breathePosX, breathePosY - 4);
         }
         client.getProfiler().pop();
     }
-
-    private void renderIcon(DrawContext context, Identifier icon, int x, int y) {
+        private void renderIcon(DrawContext context, Identifier icon, int x, int y) {
         RenderSystem.setShaderTexture(0, icon);
         context.drawTexture(icon, x, y, 0, 0, 16, 16, 16, 16);
     }
@@ -132,6 +142,10 @@ public class HealthDisplayHandler implements HudRenderCallback {
     }
 
     private int determineHealthColor(PlayerEntity player) {
+        if (ConfigManager.useStaticHealthColor()) {
+            return ConfigManager.staticHealthColor();
+        }
+
         if (player.hasStatusEffect(StatusEffects.POISON)) return 0x9ACD32;
         if (player.hasStatusEffect(StatusEffects.WITHER)) return 0x403030;
 
@@ -150,13 +164,18 @@ public class HealthDisplayHandler implements HudRenderCallback {
             return interpolateColor((0.5f - ratio) * 2f, 0xFFFF00, 0xFF0000);
         }
     }
-
     private int determineHungerColor(int hunger, int maxHunger) {
+        if (ConfigManager.useStaticHungerColor()) {
+            return ConfigManager.staticHungerColor();
+        }
+
         float ratio = (float) hunger / maxHunger;
+
         if (ratio > 0.5f) {
             return interpolateColor((1.0f - ratio) * 2f, 0xFFFF00, 0xFFA500);
         } else {
             return interpolateColor((0.5f - ratio) * 2f, 0xFFA500, 0xFF4500);
         }
     }
+
 }
