@@ -17,6 +17,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
 
     private static final ResourceLocation HEALTH_ICON = ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/health_icon.png");
     private static final ResourceLocation HUNGER_ICON = ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/hunger_icon.png");
+    private static final ResourceLocation NO_HUNGER_ICON = ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/no_hunger_icon.png");
     private static final ResourceLocation ARMOR_ICON = ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/armor_icon.png");
     private static final ResourceLocation BREATHE_ICON = ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/breathe_icon.png");
     private static final ResourceLocation TOUGHNESS_ICON = ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/toughness_icon.png");
@@ -48,7 +49,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
         int maxAir = player.getMaxAirSupply();
 
         int healthColor = determineHealthColor(player);
-        int hungerColor = determineHungerColor(hunger, 20);
+        int hungerColor = determineHungerColor( hunger, 20);
         int breatheColor = 0x00BFFF; // Light blue for oxygen
 
         // Get screen dimensions
@@ -89,13 +90,30 @@ public class HealthDisplayHandler implements HudRenderCallback {
         // Render hunger
         minecraft.getProfiler().push("betterhp_hungerIcon");
         if (ConfigManager.showHungerIcon()) {
+            boolean hasHungerEffect = player.hasEffect(MobEffects.HUNGER);
             String hungerText = hunger + "/20";
+
             if (ConfigManager.getConfigData().showNumericHunger) {
-                drawShadowedText(guiGraphics, minecraft, hungerText, hungerPosX - minecraft.font.width(hungerText), hungerPosY, hungerColor);
+                if (hasHungerEffect) {
+                    float shakeX = (float) (Math.sin(player.tickCount * 0.6f) * 1.5f);
+                    float shakeY = (float) (Math.cos(player.tickCount * 0.5f) * 1.5f);
+                    float pulseScale = 1.0f + 0.1f * (float) Math.sin(player.tickCount * 0.3f);
+
+                    guiGraphics.pose().pushPose();
+                    guiGraphics.pose().translate(hungerPosX + shakeX, hungerPosY + shakeY, 0);
+                    guiGraphics.pose().scale(pulseScale, pulseScale, 1.0f);
+                    drawShadowedText(guiGraphics, minecraft, hungerText, -minecraft.font.width(hungerText), 0, 0x9ACD32);
+                    guiGraphics.pose().popPose();
+                } else {
+                    drawShadowedText(guiGraphics, minecraft, hungerText, hungerPosX - minecraft.font.width(hungerText), hungerPosY, hungerColor);
+                }
             }
-            renderIcon(guiGraphics, HUNGER_ICON, hungerPosX, hungerPosY - 4);
+
+            ResourceLocation hungerIconToUse = hasHungerEffect ? NO_HUNGER_ICON : HUNGER_ICON;
+            renderIcon(guiGraphics, hungerIconToUse, hungerPosX, hungerPosY - 4);
         }
         minecraft.getProfiler().pop();
+
 
         minecraft.getProfiler().push("betterhp_saturationText");
         if (ConfigManager.showSaturation() && saturation > 0) {
@@ -162,22 +180,6 @@ public class HealthDisplayHandler implements HudRenderCallback {
         return (r << 16) | (g << 8) | b;
     }
 
-//    private int determineHealthColor(Player player) {
-//        if (player.hasEffect(MobEffects.POISON)) return 0x00FF00;
-//        if (player.hasEffect(MobEffects.WITHER)) return 0x707070;
-//
-//        float health = player.getHealth();
-//        float maxHealth = player.getMaxHealth();
-//        float ratio = health / maxHealth;
-//
-//        if (ratio > 0.5f) {
-//            // Interpolate Green → Yellow
-//            return interpolateColor((1.0f - ratio) * 2f, 0x00FF00, 0xFFFF00);
-//        } else {
-//            // Interpolate Yellow → Red
-//            return interpolateColor((0.5f - ratio) * 2f, 0xFFFF00, 0xFF0000);
-//        }
-//    }
 
     private int determineHealthColor(Player player) {
         if (player.hasEffect(MobEffects.POISON)) return 0x9ACD32;
@@ -199,7 +201,6 @@ public class HealthDisplayHandler implements HudRenderCallback {
         }
     }
 
-
     private int determineHungerColor(int hunger, int maxHunger) {
         float ratio = (float) hunger / maxHunger;
 
@@ -211,5 +212,4 @@ public class HealthDisplayHandler implements HudRenderCallback {
             return interpolateColor((0.5f - ratio) * 2f, 0xFFA500, 0xFF4500);
         }
     }
-
 }
