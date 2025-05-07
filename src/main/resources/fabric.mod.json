@@ -8,11 +8,11 @@
 		"Bandit-Bytes"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://discord.gg/F2deya67dm",
+		"sources": "https://github.com/Bandit-bytes/betterHP/tree/1.21-fabric"
 	},
-	"license": "CC0-1.0",
-	"icon": "assets/better-hp/icon.png",
+	"license": "All Rights Reserved",
+	"icon": "assets/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"client": [

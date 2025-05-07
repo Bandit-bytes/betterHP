@@ -50,13 +50,11 @@ public class HealthDisplayHandler implements HudRenderCallback {
 
         int healthColor = determineHealthColor(player);
         int hungerColor = determineHungerColor( hunger, 20);
-        int breatheColor = 0x00BFFF; // Light blue for oxygen
+        int breatheColor = 0x00BFFF;
 
-        // Get screen dimensions
         int screenWidth = guiGraphics.guiWidth();
         int screenHeight = guiGraphics.guiHeight();
 
-        // Get positions from config
         int healthPosX = screenWidth / 2 + ConfigManager.healthDisplayX();
         int healthPosY = screenHeight - ConfigManager.healthDisplayY();
         int hungerPosX = screenWidth / 2 + ConfigManager.hungerDisplayX();
@@ -68,14 +66,14 @@ public class HealthDisplayHandler implements HudRenderCallback {
         int saturationPosX = screenWidth / 2 + ConfigManager.saturationDisplayX();
         int saturationPosY = screenHeight - ConfigManager.saturationDisplayY();
 
-        // Render health
+
         minecraft.getProfiler().push("betterhp_healthIcon");
         if (ConfigManager.showHealthIcon()) {
             ResourceLocation icon = isHardcore ? HARDCORE_HEALTH_ICON : HEALTH_ICON;
             renderIcon(guiGraphics, icon, healthPosX - 18, healthPosY - 4);
             int shakeOffset = 0;
             if ((float) health / maxHealth < 0.2f) {
-                shakeOffset = (int) (Math.sin(player.tickCount * 0.6f) * 2); // subtle horizontal shake
+                shakeOffset = (int) (Math.sin(player.tickCount * 0.6f) * 2);
             }
 
             drawShadowedText(guiGraphics, minecraft, health + "/" + maxHealth, healthPosX + shakeOffset, healthPosY, healthColor);
@@ -87,7 +85,6 @@ public class HealthDisplayHandler implements HudRenderCallback {
         }
         minecraft.getProfiler().pop();
 
-        // Render hunger
         minecraft.getProfiler().push("betterhp_hungerIcon");
         if (ConfigManager.showHungerIcon()) {
             boolean hasHungerEffect = player.hasEffect(MobEffects.HUNGER);
@@ -122,7 +119,6 @@ public class HealthDisplayHandler implements HudRenderCallback {
         }
         minecraft.getProfiler().pop();
 
-        // Render armor
         minecraft.getProfiler().push("betterhp_armorIcon");
         if (ConfigManager.showArmorIcon()) {
             renderIcon(guiGraphics, ARMOR_ICON, armorPosX - 18, armorPosY - 4);
@@ -130,7 +126,6 @@ public class HealthDisplayHandler implements HudRenderCallback {
         }
         minecraft.getProfiler().pop();
 
-        // Render toughness
         minecraft.getProfiler().push("betterhp_toughnessIcon");
         if (ConfigManager.showToughnessIcon()) {
             int toughness = Mth.ceil(player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS).getValue());
@@ -143,7 +138,6 @@ public class HealthDisplayHandler implements HudRenderCallback {
         minecraft.getProfiler().pop();
 
 
-        // Render breathing (oxygen)
         minecraft.getProfiler().push("betterhp_breatheIcon");
         if (ConfigManager.showBreatheIcon() && (player.isUnderWater() || air < maxAir)) {
             String breatheText = (air / 20) + "/" + (maxAir / 20);
@@ -205,10 +199,10 @@ public class HealthDisplayHandler implements HudRenderCallback {
         float ratio = (float) hunger / maxHunger;
 
         if (ratio > 0.5f) {
-            // Yellow → Orange
+            // Yellow -> Orange
             return interpolateColor((1.0f - ratio) * 2f, 0xFFFF00, 0xFFA500);
         } else {
-            // Orange → Red
+            // Orange -> Red
             return interpolateColor((0.5f - ratio) * 2f, 0xFFA500, 0xFF4500);
         }
     }
