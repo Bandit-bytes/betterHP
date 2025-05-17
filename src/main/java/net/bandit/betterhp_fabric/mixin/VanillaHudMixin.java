@@ -39,4 +39,11 @@ public class VanillaHudMixin {
 			ci.cancel();
 		}
 	}
+
+	@Inject(method = "renderVehicleHealth", at = @At("HEAD"), cancellable = true)
+	private void betterhp$cancelVehicleHealth(GuiGraphics guiGraphics, CallbackInfo ci) {
+		if (!ConfigManager.renderVanillaHud() && ConfigManager.showHealthIcon()) {
+			ci.cancel();
+		}
+	}
 }

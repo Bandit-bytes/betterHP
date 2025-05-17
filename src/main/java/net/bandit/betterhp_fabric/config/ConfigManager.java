@@ -79,6 +79,8 @@ public class ConfigManager {
     public static int breatheDisplayY() { return configData != null ? configData.breatheDisplayY : 60; }
     public static int saturationDisplayX() { return configData != null ? configData.saturationDisplayX : 15; }
     public static int saturationDisplayY() { return configData != null ? configData.saturationDisplayY : 43; }
+    public static int mountDisplayX() {return configData != null ?configData.mountDisplayX: -85; }
+    public static int mountDisplayY() { return configData != null ? configData.mountDisplayY: 60; }
 
     public static ConfigData getConfigData() {
         if (configData == null) loadConfig();
@@ -113,5 +115,7 @@ public class ConfigManager {
         int breatheDisplayY = 60;
         int saturationDisplayX = 40;
         int saturationDisplayY = 43;
+        int mountDisplayX = 0;
+        int mountDisplayY = 120;
     }
 }

@@ -21,5 +21,7 @@
   "config.betterhp.showNumericOxygen": "Show Numeric Oxygen",
   "config.betterhp.showSaturation": "Show Saturation Value",
   "config.betterhp.saturationDisplayX": "Saturation Display X",
-  "config.betterhp.saturationDisplayY": "Saturation Display Y"
+  "config.betterhp.saturationDisplayY": "Saturation Display Y",
+  "config.betterhp.mountDisplayX": "Mount Display X Position",
+  "config.betterhp.mountDisplayY": "Mount Display Y Position"
 }

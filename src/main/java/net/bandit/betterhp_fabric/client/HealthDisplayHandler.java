@@ -10,6 +10,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 
@@ -22,6 +23,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
     private static final ResourceLocation BREATHE_ICON = ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/breathe_icon.png");
     private static final ResourceLocation TOUGHNESS_ICON = ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/toughness_icon.png");
     private static final ResourceLocation HARDCORE_HEALTH_ICON = ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/hardcore_health_icon.png");
+    private static final ResourceLocation MOUNT_ICON = ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/mount_icon.png");
 
     @Override
     public void onHudRender(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
@@ -120,21 +122,20 @@ public class HealthDisplayHandler implements HudRenderCallback {
         minecraft.getProfiler().pop();
 
         minecraft.getProfiler().push("betterhp_armorIcon");
-        if (ConfigManager.showArmorIcon()) {
+        if (ConfigManager.showArmorIcon()&& armorValue > 0) {
             renderIcon(guiGraphics, ARMOR_ICON, armorPosX - 18, armorPosY - 4);
             drawShadowedText(guiGraphics, minecraft, String.valueOf(armorValue), armorPosX, armorPosY, 0xFFFFFF);
         }
         minecraft.getProfiler().pop();
-
-        minecraft.getProfiler().push("betterhp_toughnessIcon");
-        if (ConfigManager.showToughnessIcon()) {
-            int toughness = Mth.ceil(player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS).getValue());
-            int toughnessPosX = armorPosX + ConfigManager.toughnessDisplayX(); // Position next to armor
+        int toughness = Mth.ceil(player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS).getValue());
+        if (ConfigManager.showToughnessIcon() && toughness > 0) {
+            int toughnessPosX = armorPosX + ConfigManager.toughnessDisplayX();
             int toughnessPosY = armorPosY + ConfigManager.toughnessDisplayY();
 
             renderIcon(guiGraphics, TOUGHNESS_ICON, toughnessPosX - 18, toughnessPosY - 4);
-            drawShadowedText(guiGraphics, minecraft, String.valueOf(toughness), toughnessPosX, toughnessPosY, 0xADD8E6); // Light Blue
+            drawShadowedText(guiGraphics, minecraft, String.valueOf(toughness), toughnessPosX, toughnessPosY, 0xADD8E6);
         }
+
         minecraft.getProfiler().pop();
 
 
@@ -147,6 +148,27 @@ public class HealthDisplayHandler implements HudRenderCallback {
             renderIcon(guiGraphics, BREATHE_ICON, breathePosX, breathePosY - 4);
         }
         minecraft.getProfiler().pop();
+
+        minecraft.getProfiler().push("betterhp_mountIcon");
+
+        if (ConfigManager.showHealthIcon()) {
+            var mount = getMountWithHealth(player);
+            if (mount != null) {
+                int mountHealth = Mth.ceil(mount.getHealth());
+                int mountMaxHealth = Mth.ceil(mount.getMaxHealth());
+
+                int mountColor = determineHealthColor(mountHealth, mountMaxHealth);
+
+                int mountPosX = screenWidth / 2 + ConfigManager.mountDisplayX();
+                int mountPosY = screenHeight - ConfigManager.mountDisplayY();
+
+                renderIcon(guiGraphics, MOUNT_ICON, mountPosX - 18, mountPosY - 4);
+                drawShadowedText(guiGraphics, minecraft, mountHealth + "/" + mountMaxHealth, mountPosX, mountPosY, mountColor);
+            }
+        }
+
+        minecraft.getProfiler().pop();
+
     }
 
     private void renderIcon(GuiGraphics guiGraphics, ResourceLocation icon, int x, int y) {
@@ -194,6 +216,21 @@ public class HealthDisplayHandler implements HudRenderCallback {
             return interpolateColor((0.5f - ratio) * 2f, 0xFFFF00, 0xFF0000); // Yellow -> Red
         }
     }
+    private int determineHealthColor(int current, int max) {
+        float ratio = (float) current / (float) max;
+
+        if (ratio < 0.2f) {
+            float pulse = (float)(Math.sin(System.currentTimeMillis() * 0.005f) * 0.5f + 0.5f);
+            return interpolateColor(pulse, 0x800000, 0xFF0000);
+        }
+
+        if (ratio > 0.5f) {
+            return interpolateColor((1.0f - ratio) * 2f, 0x00FF00, 0xFFFF00); // Green -> Yellow
+        } else {
+            return interpolateColor((0.5f - ratio) * 2f, 0xFFFF00, 0xFF0000); // Yellow -> Red
+        }
+    }
+
 
     private int determineHungerColor(int hunger, int maxHunger) {
         float ratio = (float) hunger / maxHunger;
@@ -205,5 +242,14 @@ public class HealthDisplayHandler implements HudRenderCallback {
             // Orange -> Red
             return interpolateColor((0.5f - ratio) * 2f, 0xFFA500, 0xFF4500);
         }
+    }
+    private static LivingEntity getMountWithHealth(Player player) {
+        if (player != null) {
+            var vehicle = player.getVehicle();
+            if (vehicle instanceof LivingEntity living && living.showVehicleHealth()) {
+                return living;
+            }
+        }
+        return null;
     }
 }

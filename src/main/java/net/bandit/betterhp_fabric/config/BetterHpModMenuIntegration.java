@@ -207,6 +207,23 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                     ConfigManager.saveConfig();
                 })
                 .build());
+        general.addEntry(entryBuilder.startIntField(Component.translatable("config.betterhp.mountDisplayX"), ConfigManager.mountDisplayX())
+                .setDefaultValue(-76)
+                .setSaveConsumer(newValue -> {
+                    ConfigManager.getConfigData().mountDisplayX = newValue;
+                    ConfigManager.saveConfig();
+                })
+                .build());
+
+        general.addEntry(entryBuilder.startIntField(Component.translatable("config.betterhp.mountDisplayY"), ConfigManager.mountDisplayY())
+                .setDefaultValue(70)
+                .setSaveConsumer(newValue -> {
+                    ConfigManager.getConfigData().mountDisplayY = newValue;
+                    ConfigManager.saveConfig();
+                })
+                .build());
+
+
 
         builder.setSavingRunnable(ConfigManager::saveConfig);
         return builder.build();
