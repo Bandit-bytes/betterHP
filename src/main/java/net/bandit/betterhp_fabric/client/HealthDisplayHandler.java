@@ -24,6 +24,11 @@ public class HealthDisplayHandler implements HudRenderCallback {
     private static final ResourceLocation TOUGHNESS_ICON = ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/toughness_icon.png");
     private static final ResourceLocation HARDCORE_HEALTH_ICON = ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/hardcore_health_icon.png");
     private static final ResourceLocation MOUNT_ICON = ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/mount_icon.png");
+    private int armorBounceTicks = 0;
+    private int toughnessBounceTicks = 0;
+    private int lastRenderedArmorValue = 0;
+    private int lastRenderedToughness = 0;
+
 
     @Override
     public void onHudRender(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
@@ -122,22 +127,65 @@ public class HealthDisplayHandler implements HudRenderCallback {
         minecraft.getProfiler().pop();
 
         minecraft.getProfiler().push("betterhp_armorIcon");
-        if (ConfigManager.showArmorIcon()&& armorValue > 0) {
-            renderIcon(guiGraphics, ARMOR_ICON, armorPosX - 18, armorPosY - 4);
-            drawShadowedText(guiGraphics, minecraft, String.valueOf(armorValue), armorPosX, armorPosY, 0xFFFFFF);
-        }
-        minecraft.getProfiler().pop();
         int toughness = Mth.ceil(player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS).getValue());
+
+        if (armorValue != lastRenderedArmorValue) {
+            armorBounceTicks = 10;
+        }
+        lastRenderedArmorValue = armorValue;
+
+        if (toughness != lastRenderedToughness) {
+            toughnessBounceTicks = 10;
+        }
+        lastRenderedToughness = toughness;
+
+// -- Armor --
+        if (ConfigManager.showArmorIcon() && armorValue > 0) {
+            float scale = 1.0f;
+            if (armorBounceTicks > 0) {
+                scale = 1.0f + 0.2f * (float) Math.sin((10 - armorBounceTicks) * Math.PI / 10);
+                armorBounceTicks--;
+            }
+
+            float pulse = (armorValue == 20) ? (0.9f + 0.1f * (float) Math.sin(player.tickCount * 0.2f)) : 1.0f;
+
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().translate(armorPosX - 10, armorPosY + 2, 0);
+            guiGraphics.pose().scale(scale, scale, 1.0f);
+            guiGraphics.pose().translate(-(armorPosX - 10), -(armorPosY + 2), 0);
+            guiGraphics.setColor(pulse, pulse, pulse, 1.0f); // No fade
+
+            renderIcon(guiGraphics, ARMOR_ICON, armorPosX - 18, armorPosY - 4);
+            guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+            drawShadowedText(guiGraphics, minecraft, String.valueOf(armorValue), armorPosX, armorPosY, 0xFFFFFF);
+            guiGraphics.pose().popPose();
+        }
+
+// -- Toughness --
         if (ConfigManager.showToughnessIcon() && toughness > 0) {
             int toughnessPosX = armorPosX + ConfigManager.toughnessDisplayX();
             int toughnessPosY = armorPosY + ConfigManager.toughnessDisplayY();
 
+            float scale = 1.0f;
+            if (toughnessBounceTicks > 0) {
+                scale = 1.0f + 0.2f * (float) Math.sin((10 - toughnessBounceTicks) * Math.PI / 10);
+                toughnessBounceTicks--;
+            }
+
+            float pulse = (toughness >= 5) ? (0.9f + 0.1f * (float) Math.sin(player.tickCount * 0.2f)) : 1.0f;
+
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().translate(toughnessPosX - 10, toughnessPosY + 2, 0);
+            guiGraphics.pose().scale(scale, scale, 1.0f);
+            guiGraphics.pose().translate(-(toughnessPosX - 10), -(toughnessPosY + 2), 0);
+            guiGraphics.setColor(pulse, pulse, pulse, 1.0f); // No fade
+
             renderIcon(guiGraphics, TOUGHNESS_ICON, toughnessPosX - 18, toughnessPosY - 4);
+            guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
             drawShadowedText(guiGraphics, minecraft, String.valueOf(toughness), toughnessPosX, toughnessPosY, 0xADD8E6);
+            guiGraphics.pose().popPose();
         }
-
         minecraft.getProfiler().pop();
-
 
         minecraft.getProfiler().push("betterhp_breatheIcon");
         if (ConfigManager.showBreatheIcon() && (player.isUnderWater() || air < maxAir)) {
