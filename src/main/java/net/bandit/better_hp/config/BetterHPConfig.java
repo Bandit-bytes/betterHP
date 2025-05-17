@@ -114,6 +114,24 @@ public class BetterHPConfig {
             .comment("Color of the health numerical value in the HUD. Uses Decimal color code; Default is Red")
             .defineInRange("healthColor", 0xFF5555, 0x000000, 0xFFFFFF);
 
+    public static final ModConfigSpec.BooleanValue showVanillaMountHealth = CLIENT_BUILDER
+            .comment("Show vanilla mount hearts (when riding an entity like a horse)")
+            .define("showVanillaMountHealth", false);
+
+    public static final ModConfigSpec.BooleanValue showMountIcon = CLIENT_BUILDER
+            .comment("Show custom mount health icon and value on HUD when riding")
+            .define("showMountIcon", true);
+
+
+    public static final ModConfigSpec.IntValue mountDisplayX = CLIENT_BUILDER
+            .comment("Horizontal position of the mount health icon display")
+            .defineInRange("mountDisplayX", -70, -1000, 1000);
+
+    public static final ModConfigSpec.IntValue mountDisplayY = CLIENT_BUILDER
+            .comment("Vertical position of the mount health icon display")
+            .defineInRange("mountDisplayY", 63, 0, 1000);
+
+
     // Build the client configuration spec
     public static final ModConfigSpec CLIENT_SPEC = CLIENT_BUILDER.build();
 
@@ -125,6 +143,10 @@ public class BetterHPConfig {
     public static int armorX, armorY;
     public static boolean toughnessIconEnabled;
     public static int toughnessX, toughnessY;
+    public static boolean mountIconEnabled;
+    public static boolean vanillaMountHeartsEnabled;
+    public static int mountX, mountY;
+
 
 
     // Event to load the config values
@@ -148,6 +170,11 @@ public class BetterHPConfig {
         toughnessIconEnabled = showToughnessIcon.get();
         toughnessX = toughnessDisplayX.get();
         toughnessY = toughnessDisplayY.get();
+        mountIconEnabled = showMountIcon.get();
+        vanillaMountHeartsEnabled = showVanillaMountHealth.get();
+        mountX = mountDisplayX.get();
+        mountY = mountDisplayY.get();
+
     }
 
     // Method to reload config dynamically

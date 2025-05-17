@@ -6,6 +6,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
@@ -14,6 +16,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import org.jetbrains.annotations.Nullable;
 
 @EventBusSubscriber(modid = BetterhpMod.MOD_ID, value = Dist.CLIENT)
 public class HealthDisplayHandler {
@@ -21,6 +24,7 @@ public class HealthDisplayHandler {
     private static final ResourceLocation HEALTH_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/health_icon.png");
     private static final ResourceLocation HUNGER_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/hunger_icon.png");
     private static final ResourceLocation ARMOR_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/armor_icon.png");
+    private static final ResourceLocation MOUNT_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/mount_icon.png");
     private static final ResourceLocation BREATHE_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/breathe_icon.png");
     private static final ResourceLocation TOUGHNESS_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/toughness_icon.png");
     private static final ResourceLocation HARDCORE_HEALTH_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/hardcore_health_icon.png");
@@ -28,6 +32,7 @@ public class HealthDisplayHandler {
     // Cached configuration variables
     private static boolean showVanillaHearts;
     private static boolean showVanillaArmor;
+    private static boolean showVanillaMountHealth;
     private static boolean showVanillaHunger;
     private static boolean showVanillaOxygen;
     private static boolean showNumericHealth;
@@ -38,6 +43,12 @@ public class HealthDisplayHandler {
     private static boolean showArmorIcon;
     private static boolean showToughnessIcon;
     private static boolean showHungerIcon;
+
+    private static int armorBounceTicks = 0;
+    private static int toughnessBounceTicks = 0;
+    private static int lastArmorValue = -1;
+    private static int lastToughnessValue = -1;
+
     private static boolean enableDynamicColor;
     private static int healthDisplayX;
     private static int healthDisplayY;
@@ -55,6 +66,7 @@ public class HealthDisplayHandler {
     public static void loadCachedConfigValues() {
         showVanillaHearts = BetterHPConfig.showVanillaHearts.get();
         showVanillaArmor = BetterHPConfig.showVanillaArmor.get();
+        showVanillaMountHealth = BetterHPConfig.showVanillaMountHealth.get();
         showVanillaHunger = BetterHPConfig.showVanillaHunger.get();
         showVanillaOxygen = BetterHPConfig.showVanillaOxygen.get();
         showNumericHealth = BetterHPConfig.showNumericHealth.get();
@@ -125,51 +137,119 @@ public class HealthDisplayHandler {
         int oxygenX = BetterHPConfig.oxygenDisplayX.get();
         int oxygenY = BetterHPConfig.oxygenDisplayY.get();
 
+
         float health = player.getHealth();
         float maxHealth = player.getMaxHealth();
         int absorption = (int) player.getAbsorptionAmount();
         int toughnessValue = (int) player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS).getValue();
         int armorValue = player.getArmorValue();
+        if (armorValue != lastArmorValue) {
+            armorBounceTicks = 10;
+        }
+        lastArmorValue = armorValue;
+
+        if (toughnessValue != lastToughnessValue) {
+            toughnessBounceTicks = 10;
+        }
+        lastToughnessValue = toughnessValue;
         int hunger = player.getFoodData().getFoodLevel();
         int saturation = (int) player.getFoodData().getSaturationLevel();
         int air = player.getAirSupply();
         int maxAir = player.getMaxAirSupply();
 
-        int healthTextColor = enableDynamicColor ? getDynamicHealthColor(health, maxHealth) : BetterHPConfig.healthColor.get();
+        int healthTextColor = enableDynamicColor ? getDynamicHealthColor(player) : BetterHPConfig.healthColor.get();
+
 
         // Render HUD Elements
-        drawHealth(guiGraphics, health, maxHealth, healthTextColor, screenWidth, screenHeight, healthX, healthY, showHealthIcon, showNumericHealth);
+        drawHealth(guiGraphics, player, health, maxHealth, healthTextColor, screenWidth, screenHeight, healthX, healthY, showHealthIcon, showNumericHealth);
         drawArmor(guiGraphics, armorValue, screenWidth, screenHeight, armorX, armorY, showArmorIcon);
         drawToughness(guiGraphics, toughnessValue, screenWidth, screenHeight, toughnessX, toughnessY, showToughnessIcon);
         drawHunger(guiGraphics, hunger, screenWidth, screenHeight, hungerX, hungerY, showHungerIcon, showNumericHunger);
         drawOxygen(guiGraphics, air, maxAir, screenWidth, screenHeight, oxygenX, oxygenY, showBreatheIcon, showNumericOxygen);
         drawAbsorption(guiGraphics, absorption, screenWidth, screenHeight, healthX, healthY);
         drawSaturation(guiGraphics, saturation, screenWidth, screenHeight, hungerX, hungerY);
+        LivingEntity mount = getMountWithHealth(player);
+        if (mount != null && BetterHPConfig.showMountIcon.get()) {
+            int mountHealth = Mth.ceil(mount.getHealth());
+            int mountMaxHealth = Mth.ceil(mount.getMaxHealth());
+
+            int mountX = (screenWidth / 2) + BetterHPConfig.mountDisplayX.get();
+            int mountY = screenHeight - BetterHPConfig.mountDisplayY.get();
+
+            drawIcon(guiGraphics, MOUNT_ICON, mountX - 24, mountY - 4, 16, 16);
+            guiGraphics.drawString(Minecraft.getInstance().font, mountHealth + "/" + mountMaxHealth, mountX, mountY, 0xAA77FF);
+        }
     }
 
-    // Render Methods
-    private static void drawHealth(GuiGraphics guiGraphics, float health, float maxHealth, int textColor, int screenWidth, int screenHeight, int x, int y, boolean showIcon, boolean showNumeric) {
-        ResourceLocation healthIcon = Minecraft.getInstance().level != null && Minecraft.getInstance().level.getLevelData().isHardcore() ? HARDCORE_HEALTH_ICON : HEALTH_ICON;
+        // Render Methods
+    private static void drawHealth(GuiGraphics guiGraphics, Player player, float health, float maxHealth, int textColor, int screenWidth, int screenHeight, int x, int y, boolean showIcon, boolean showNumeric)
+    {
+    ResourceLocation healthIcon = Minecraft.getInstance().level != null && Minecraft.getInstance().level.getLevelData().isHardcore() ? HARDCORE_HEALTH_ICON : HEALTH_ICON;
 
         if (showIcon) {
             drawIcon(guiGraphics, healthIcon, (screenWidth / 2) + x - 24, screenHeight - y - 4, 16, 16);
         }
         if (showNumeric) {
-            guiGraphics.drawString(Minecraft.getInstance().font, String.format("%d/%d", (int) health, (int) maxHealth), (screenWidth / 2) + x, screenHeight - y, textColor);
+            int shakeOffset = 0;
+            if ((health / maxHealth) < 0.2f) {
+                shakeOffset = (int)(Math.sin(player.tickCount * 0.6f) * 2); // subtle horizontal shake
+            }
+            guiGraphics.drawString(Minecraft.getInstance().font, String.format("%d/%d", (int) health, (int) maxHealth), (screenWidth / 2) + x + shakeOffset, screenHeight - y, textColor);
+
         }
     }
 
     private static void drawArmor(GuiGraphics guiGraphics, int armorValue, int screenWidth, int screenHeight, int x, int y, boolean showIcon) {
-        if (showIcon) {
-            drawIcon(guiGraphics, ARMOR_ICON, (screenWidth / 2) + x - 24, screenHeight - y - 4, 16, 16);
+        if (showIcon && armorValue > 0) {
+            float scale = 1.0f;
+            if (armorBounceTicks > 0) {
+                scale = 1.0f + 0.2f * (float) Math.sin((10 - armorBounceTicks) * Math.PI / 10);
+                armorBounceTicks--;
+            }
+
+            float pulse = (armorValue == 20) ? (0.9f + 0.1f * (float) Math.sin(Minecraft.getInstance().player.tickCount * 0.2f)) : 1.0f;
+
+            int iconX = (screenWidth / 2) + x - 10;
+            int iconY = screenHeight - y + 2;
+
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().translate(iconX, iconY, 0);
+            guiGraphics.pose().scale(scale, scale, 1.0f);
+            guiGraphics.pose().translate(-iconX, -iconY, 0);
+            guiGraphics.setColor(pulse, pulse, pulse, 1.0f);
+
+            drawIcon(guiGraphics, ARMOR_ICON, iconX - 14, iconY - 6, 16, 16);
+            guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
             drawShadowedText(guiGraphics, Minecraft.getInstance().font, String.valueOf(armorValue), (screenWidth / 2) + x, screenHeight - y, 0xAAAAAA);
+
+            guiGraphics.pose().popPose();
         }
     }
 
     private static void drawToughness(GuiGraphics guiGraphics, int toughnessValue, int screenWidth, int screenHeight, int x, int y, boolean showIcon) {
-        if (showIcon) {
-            drawIcon(guiGraphics, TOUGHNESS_ICON, (screenWidth / 2) + x - 24, screenHeight - y - 4, 16, 16);
+        if (showIcon && toughnessValue > 0) {
+            float scale = 1.0f;
+            if (toughnessBounceTicks > 0) {
+                scale = 1.0f + 0.2f * (float) Math.sin((10 - toughnessBounceTicks) * Math.PI / 10);
+                toughnessBounceTicks--;
+            }
+
+            float pulse = (toughnessValue >= 5) ? (0.9f + 0.1f * (float) Math.sin(Minecraft.getInstance().player.tickCount * 0.2f)) : 1.0f;
+
+            int iconX = (screenWidth / 2) + x - 10;
+            int iconY = screenHeight - y + 2;
+
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().translate(iconX, iconY, 0);
+            guiGraphics.pose().scale(scale, scale, 1.0f);
+            guiGraphics.pose().translate(-iconX, -iconY, 0);
+            guiGraphics.setColor(pulse, pulse, pulse, 1.0f);
+
+            drawIcon(guiGraphics, TOUGHNESS_ICON, iconX - 14, iconY - 6, 16, 16);
+            guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
             drawShadowedText(guiGraphics, Minecraft.getInstance().font, String.valueOf(toughnessValue), (screenWidth / 2) + x, screenHeight - y, 0xADD8E6);
+
+            guiGraphics.pose().popPose();
         }
     }
 
@@ -210,9 +290,41 @@ public class HealthDisplayHandler {
         }
     }
 
-    private static int getDynamicHealthColor(float health, float maxHealth) {
-        float healthPercentage = health / maxHealth;
-        return (healthPercentage > 0.6f) ? 0x00FF00 : (healthPercentage > 0.3f) ? 0xFFFF00 : 0xFF0000;
+
+
+    private static int getDynamicHealthColor(Player player) {
+        float health = player.getHealth();
+        float maxHealth = player.getMaxHealth();
+        float ratio = health / maxHealth;
+
+        if (ratio < 0.2f) {
+            // Pulse from dark red to bright red
+            float pulse = (float)(Math.sin(player.tickCount * 0.3f) * 0.5f + 0.5f);
+            return interpolateColor(pulse, 0x800000, 0xFF0000);
+        }
+
+        if (ratio > 0.5f) {
+            // Green → Yellow
+            return interpolateColor((1.0f - ratio) * 2f, 0x00FF00, 0xFFFF00);
+        } else {
+            // Yellow → Red
+            return interpolateColor((0.5f - ratio) * 2f, 0xFFFF00, 0xFF0000);
+        }
+    }
+    private static int interpolateColor(float ratio, int colorStart, int colorEnd) {
+        int r1 = (colorStart >> 16) & 0xFF;
+        int g1 = (colorStart >> 8) & 0xFF;
+        int b1 = colorStart & 0xFF;
+
+        int r2 = (colorEnd >> 16) & 0xFF;
+        int g2 = (colorEnd >> 8) & 0xFF;
+        int b2 = colorEnd & 0xFF;
+
+        int r = (int)(r1 + (r2 - r1) * ratio);
+        int g = (int)(g1 + (g2 - g1) * ratio);
+        int b = (int)(b1 + (b2 - b1) * ratio);
+
+        return (r << 16) | (g << 8) | b;
     }
 
     private static void drawIcon(GuiGraphics guiGraphics, ResourceLocation icon, int x, int y, int width, int height) {
@@ -223,4 +335,15 @@ public class HealthDisplayHandler {
     private static void drawShadowedText(GuiGraphics guiGraphics, Font font, String text, int x, int y, int color) {
         guiGraphics.drawString(font, text, x, y, color, true);
     }
+    @Nullable
+    private static LivingEntity getMountWithHealth(Player player) {
+        if (player != null) {
+            var vehicle = player.getVehicle();
+            if (vehicle instanceof LivingEntity living && living.showVehicleHealth()) {
+                return living;
+            }
+        }
+        return null;
+    }
+
 }
