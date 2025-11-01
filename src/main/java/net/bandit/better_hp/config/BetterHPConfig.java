@@ -79,7 +79,7 @@ public class BetterHPConfig {
 
     public static final ModConfigSpec.IntValue armorDisplayY = CLIENT_BUILDER
             .comment("Vertical position of the armor icon display")
-            .defineInRange("armorDisplayY", 50, 0, 1000);
+            .defineInRange("armorDisplayY", 56, 0, 1000);
 
     public static final ModConfigSpec.BooleanValue showToughnessIcon = CLIENT_BUILDER
             .comment("Show custom toughness icon")
@@ -91,7 +91,7 @@ public class BetterHPConfig {
 
     public static final ModConfigSpec.IntValue toughnessDisplayY = CLIENT_BUILDER
             .comment("Vertical position of the toughness icon display")
-            .defineInRange("toughnessDisplayY", 50, 0, 1000);
+            .defineInRange("toughnessDisplayY", 56, 0, 1000);
 
 
     public static final ModConfigSpec.IntValue hungerDisplayX = CLIENT_BUILDER
@@ -131,11 +131,33 @@ public class BetterHPConfig {
             .comment("Vertical position of the mount health icon display")
             .defineInRange("mountDisplayY", 63, 0, 1000);
 
+    public static final ModConfigSpec.BooleanValue showAbsorptionText = CLIENT_BUILDER
+            .comment("Show +Absorption numeric text")
+            .define("showAbsorptionText", true);
 
-    // Build the client configuration spec
+    public static final ModConfigSpec.BooleanValue absorptionFollowHealthWidth = CLIENT_BUILDER
+            .comment("Place absorption right after the rendered health text so it never overlaps")
+            .define("absorptionFollowHealthWidth", true);
+
+    public static final ModConfigSpec.IntValue absorptionOffsetX = CLIENT_BUILDER
+            .comment("Absorption X offset RELATIVE to the health anchor (used if absorptionFollowHealthWidth=false)")
+            .defineInRange("absorptionOffsetX", -18, -1000, 1000);
+
+    public static final ModConfigSpec.IntValue absorptionOffsetY = CLIENT_BUILDER
+            .comment("Absorption Y offset RELATIVE to the health anchor (positive moves down)")
+            .defineInRange("absorptionOffsetY", 0, -1000, 1000);
+
+
+    public static final ModConfigSpec.BooleanValue showSaturationText = CLIENT_BUILDER
+            .comment("Show +Saturation numeric text")
+            .define("showSaturationText", true);
+
+    public static final ModConfigSpec.BooleanValue hideSaturationIfVanillaHunger = CLIENT_BUILDER
+            .comment("Hide saturation number when vanilla hunger bar is enabled")
+            .define("hideSaturationIfVanillaHunger", true);
+
     public static final ModConfigSpec CLIENT_SPEC = CLIENT_BUILDER.build();
 
-    // Configuration variables (these will cache the values from the config)
     public static boolean customHUDEnabled;
     public static boolean heartsEnabled;
     public static boolean dynamicHealthColor;
@@ -148,8 +170,6 @@ public class BetterHPConfig {
     public static int mountX, mountY;
 
 
-
-    // Event to load the config values
     @SubscribeEvent
     public static void onConfigLoad(ModConfigEvent event) {
         if (event.getConfig().getSpec() == CLIENT_SPEC) {
@@ -158,7 +178,6 @@ public class BetterHPConfig {
         }
     }
 
-    // Cache config values for quick access
     public static void loadCachedConfigValues() {
         customHUDEnabled = enableCustomHUD.get();
         heartsEnabled = showVanillaHearts.get();
@@ -177,7 +196,6 @@ public class BetterHPConfig {
 
     }
 
-    // Method to reload config dynamically
     public static void reloadConfig() {
         loadCachedConfigValues();
         BetterhpMod.getLogger().info("Config reloaded dynamically.");
