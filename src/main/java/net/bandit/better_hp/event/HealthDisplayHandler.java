@@ -1,6 +1,5 @@
 package net.bandit.better_hp.event;
 
-import net.bandit.better_hp.BetterhpMod;
 import net.bandit.better_hp.config.BetterHPConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -11,14 +10,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import org.jetbrains.annotations.Nullable;
 
-@EventBusSubscriber(modid = BetterhpMod.MOD_ID, value = Dist.CLIENT)
+//@EventBusSubscriber(modid = BetterhpMod.MOD_ID, value = Dist.CLIENT)
 public class HealthDisplayHandler {
 
     private static final ResourceLocation HEALTH_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/health_icon.png");
@@ -209,7 +205,7 @@ public class HealthDisplayHandler {
             int mountY = screenHeight - BetterHPConfig.mountDisplayY.get();
 
             drawIcon(guiGraphics, MOUNT_ICON, mountX - 24, mountY - 4, 16, 16);
-            guiGraphics.drawString(Minecraft.getInstance().font, mountHealth + "/" + mountMaxHealth, mountX, mountY, 0xAA77FF);
+            guiGraphics.drawString(Minecraft.getInstance().font, mountHealth + "/" + mountMaxHealth, mountX, mountY, 0xFFAA77FF);
         }
     }
 
@@ -237,65 +233,59 @@ public class HealthDisplayHandler {
                 shakeOffset = (int)(Math.sin(player.tickCount * 0.6f) * 2);
             }
             String hpText = String.format("%d/%d", (int) health, (int) maxHealth);
-            g.drawString(font, hpText, (sw / 2) + x + shakeOffset, sh - y, textColor);
+            g.drawString(font, hpText, (sw / 2) + x + shakeOffset, sh - y, textColor | 0xFF000000);
             used += font.width(hpText);
         }
 
         return used;
     }
 
-    private static void drawArmor(GuiGraphics guiGraphics, int armorValue, int screenWidth, int screenHeight, int x, int y, boolean showIcon) {
-        if (showIcon && armorValue > 0) {
-            float scale = 1.0f;
-            if (armorBounceTicks > 0) {
-                scale = 1.0f + 0.2f * (float) Math.sin((10 - armorBounceTicks) * Math.PI / 10);
-                armorBounceTicks--;
-            }
+    private static void drawArmor(GuiGraphics g, int armorValue, int sw, int sh, int x, int y, boolean showIcon) {
+        if (!showIcon || armorValue <= 0) return;
 
-            float pulse = (armorValue == 20) ? (0.9f + 0.1f * (float) Math.sin(Minecraft.getInstance().player.tickCount * 0.2f)) : 1.0f;
-
-            int iconX = (screenWidth / 2) + x - 10;
-            int iconY = screenHeight - y + 2;
-
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(iconX, iconY, 0);
-            guiGraphics.pose().scale(scale, scale, 1.0f);
-            guiGraphics.pose().translate(-iconX, -iconY, 0);
-            guiGraphics.setColor(pulse, pulse, pulse, 1.0f);
-
-            drawIcon(guiGraphics, ARMOR_ICON, iconX - 14, iconY - 6, 16, 16);
-            guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-            drawShadowedText(guiGraphics, Minecraft.getInstance().font, String.valueOf(armorValue), (screenWidth / 2) + x, screenHeight - y, 0xAAAAAA);
-
-            guiGraphics.pose().popPose();
+        float scale = 1.0f;
+        if (armorBounceTicks > 0) {
+            scale = 1.0f + 0.2f * (float)Math.sin((10 - armorBounceTicks) * Math.PI / 10);
+            armorBounceTicks--;
         }
+
+        int iconX = (sw / 2) + x - 10;
+        int iconY = sh - y + 2;
+
+        g.pose().pushMatrix();
+        g.pose().translate((float)iconX, (float)iconY);
+        g.pose().scale(scale, scale);
+        g.pose().translate((float)-iconX, (float)-iconY);
+
+        drawIcon(g, ARMOR_ICON, iconX - 14, iconY - 6, 16, 16);
+        drawShadowedText(g, Minecraft.getInstance().font,
+                String.valueOf(armorValue), (sw / 2) + x, sh - y, 0xFFAAAAAA);
+
+        g.pose().popMatrix();
     }
 
-    private static void drawToughness(GuiGraphics guiGraphics, int toughnessValue, int screenWidth, int screenHeight, int x, int y, boolean showIcon) {
-        if (showIcon && toughnessValue > 0) {
-            float scale = 1.0f;
-            if (toughnessBounceTicks > 0) {
-                scale = 1.0f + 0.2f * (float) Math.sin((10 - toughnessBounceTicks) * Math.PI / 10);
-                toughnessBounceTicks--;
-            }
+    private static void drawToughness(GuiGraphics g, int toughnessValue, int sw, int sh, int x, int y, boolean showIcon) {
+        if (!showIcon || toughnessValue <= 0) return;
 
-            float pulse = (toughnessValue >= 5) ? (0.9f + 0.1f * (float) Math.sin(Minecraft.getInstance().player.tickCount * 0.2f)) : 1.0f;
-
-            int iconX = (screenWidth / 2) + x - 10;
-            int iconY = screenHeight - y + 2;
-
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(iconX, iconY, 0);
-            guiGraphics.pose().scale(scale, scale, 1.0f);
-            guiGraphics.pose().translate(-iconX, -iconY, 0);
-            guiGraphics.setColor(pulse, pulse, pulse, 1.0f);
-
-            drawIcon(guiGraphics, TOUGHNESS_ICON, iconX - 14, iconY - 6, 16, 16);
-            guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-            drawShadowedText(guiGraphics, Minecraft.getInstance().font, String.valueOf(toughnessValue), (screenWidth / 2) + x, screenHeight - y, 0xADD8E6);
-
-            guiGraphics.pose().popPose();
+        float scale = 1.0f;
+        if (toughnessBounceTicks > 0) {
+            scale = 1.0f + 0.2f * (float)Math.sin((10 - toughnessBounceTicks) * Math.PI / 10);
+            toughnessBounceTicks--;
         }
+
+        int iconX = (sw / 2) + x - 10;
+        int iconY = sh - y + 2;
+
+        g.pose().pushMatrix();
+        g.pose().translate((float)iconX, (float)iconY);
+        g.pose().scale(scale, scale);
+        g.pose().translate((float)-iconX, (float)-iconY);
+
+        drawIcon(g, TOUGHNESS_ICON, iconX - 14, iconY - 6, 16, 16);
+        drawShadowedText(g, Minecraft.getInstance().font,
+                String.valueOf(toughnessValue), (sw / 2) + x, sh - y, 0xFFADD8E6);
+
+        g.pose().popMatrix();
     }
 
     private static void drawHunger(GuiGraphics guiGraphics, int hunger, int screenWidth, int screenHeight, int x, int y, boolean showIcon, boolean showNumeric) {
@@ -306,7 +296,7 @@ public class HealthDisplayHandler {
         int textWidth = font.width(hungerText);
 
         if (showNumeric) {
-            drawShadowedText(guiGraphics, font, hungerText, (screenWidth / 2) + x, screenHeight - y, 0xFF7518);
+            drawShadowedText(guiGraphics, font, hungerText, (screenWidth / 2) + x, screenHeight - y, 0xFFFF7518);
         }
         if (showIcon) {
 
@@ -316,7 +306,7 @@ public class HealthDisplayHandler {
 
     private static void drawOxygen(GuiGraphics guiGraphics, int air, int maxAir, int screenWidth, int screenHeight, int x, int y, boolean showIcon, boolean showNumeric) {
         if (showNumeric && air < maxAir) {
-            drawShadowedText(guiGraphics, Minecraft.getInstance().font, (air / 20) + "/" + (maxAir / 20), (screenWidth / 2) + x - 10, screenHeight - y, 0x00BFFF);
+            drawShadowedText(guiGraphics, Minecraft.getInstance().font, (air / 20) + "/" + (maxAir / 20), (screenWidth / 2) + x - 10, screenHeight - y, 0xFF00BFFF);
         }
         if (showIcon && air < maxAir) {
             drawIcon(guiGraphics, BREATHE_ICON, (screenWidth / 2) + x + 18, screenHeight - y - 4, 16, 16);
@@ -325,14 +315,14 @@ public class HealthDisplayHandler {
 
     private static void drawAbsorption(GuiGraphics g, int absorption, int absX, int absY) {
         if (absorption > 0) {
-            drawShadowedText(g, Minecraft.getInstance().font, "+" + absorption, absX, absY, 0xFFFF00);
+            drawShadowedText(g, Minecraft.getInstance().font, "+" + absorption, absX, absY, 0xFFFFFF00);
         }
     }
 
 
     private static void drawSaturation(GuiGraphics guiGraphics, int saturation, int screenWidth, int screenHeight, int x, int y) {
         if (saturation > 0) {
-            drawShadowedText(guiGraphics, Minecraft.getInstance().font, "+" + saturation, (screenWidth / 2) + x + 46, screenHeight - y, 0xFFD700);
+            drawShadowedText(guiGraphics, Minecraft.getInstance().font, "+" + saturation, (screenWidth / 2) + x + 46, screenHeight - y, 0xFFFFD700);
         }
     }
 
@@ -346,15 +336,15 @@ public class HealthDisplayHandler {
         if (ratio < 0.2f) {
             // Pulse from dark red to bright red
             float pulse = (float)(Math.sin(player.tickCount * 0.3f) * 0.5f + 0.5f);
-            return interpolateColor(pulse, 0x800000, 0xFF0000);
+            return interpolateColor(pulse, 0xFF800000, 0xFFFF0000);
         }
 
         if (ratio > 0.5f) {
             // Green → Yellow
-            return interpolateColor((1.0f - ratio) * 2f, 0x00FF00, 0xFFFF00);
+            return interpolateColor((1.0f - ratio) * 2f, 0xFF00FF00, 0xFFFFFF00);
         } else {
             // Yellow → Red
-            return interpolateColor((0.5f - ratio) * 2f, 0xFFFF00, 0xFF0000);
+            return interpolateColor((0.5f - ratio) * 2f, 0xFFFFFF00, 0xFFFF0000);
         }
     }
     private static int interpolateColor(float ratio, int colorStart, int colorEnd) {
@@ -373,9 +363,14 @@ public class HealthDisplayHandler {
         return (r << 16) | (g << 8) | b;
     }
 
-    private static void drawIcon(GuiGraphics guiGraphics, ResourceLocation icon, int x, int y, int width, int height) {
-        RenderSystem.setShaderTexture(0, icon);
-        guiGraphics.blit(icon, x, y, 0, 0, width, height, width, height);
+    private static void drawIcon(GuiGraphics g, ResourceLocation icon, int x, int y, int w, int h) {
+        g.pose().pushMatrix();
+        g.pose().translate((float)x, (float)y);
+        g.pose().scale(w / 16f, h / 16f);
+
+        g.blit(icon, 0, 0, 0, 0, 16, 16, 16, 16);
+
+        g.pose().popMatrix();
     }
 
     private static void drawShadowedText(GuiGraphics guiGraphics, Font font, String text, int x, int y, int color) {

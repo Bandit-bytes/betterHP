@@ -1,6 +1,5 @@
 package net.bandit.better_hp;
 
-import com.mojang.logging.LogUtils;
 import net.bandit.better_hp.config.BetterHPConfig;
 import net.bandit.better_hp.event.HealthDisplayHandler;
 import net.neoforged.api.distmarker.Dist;
@@ -12,6 +11,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,13 +26,8 @@ public class BetterhpMod {
     }
 
     public BetterhpMod(IEventBus modEventBus, ModContainer modContainer) {
-        // Register common setup
         modEventBus.addListener(this::commonSetup);
-
-        // Register the configuration handler to the mod event bus
         modEventBus.addListener(BetterHPConfig::onConfigLoad);
-
-        // Register the configuration file
         modContainer.registerConfig(ModConfig.Type.CLIENT, BetterHPConfig.CLIENT_SPEC);
     }
     @SubscribeEvent
@@ -42,12 +37,13 @@ public class BetterhpMod {
     private void commonSetup(final FMLCommonSetupEvent event) {
         LOGGER.info("Common setup complete for Better HP mod");
     }
-    @EventBusSubscriber(modid = BetterhpMod.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid = BetterhpMod.MOD_ID)
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
-            // Load the configuration values after the client setup event
             HealthDisplayHandler.loadCachedConfigValues();
+//            NeoForge.EVENT_BUS.addListener(HealthDisplayHandler::onRenderGuiPre);
+            NeoForge.EVENT_BUS.addListener(HealthDisplayHandler::onRenderGuiPost);
         }
     }
 }
