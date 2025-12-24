@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 1,
-	"id": "better-hp",
+	"id": "better_hp",
 	"version": "${version}",
 	"name": "Better HP",
 	"description": "Better Render of HP and other player info",
@@ -16,7 +16,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"client": [
-			"net.bandit.betterhp_fabric.client.betterhp_fabricClient"
+			"net.bandit.betterhp_fabric.client.BetterHpFabricClient"
 		],
 		"main": [
 			"net.bandit.betterhp_fabric.BetterHPFabric"
@@ -29,8 +29,8 @@
 		"better-hp.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.16.10",
-		"minecraft": "~1.21.1",
+		"fabricloader": ">=0.18.3",
+		"minecraft": "~1.21.10",
 		"java": ">=21",
 		"fabric-api": "*"
 	},
