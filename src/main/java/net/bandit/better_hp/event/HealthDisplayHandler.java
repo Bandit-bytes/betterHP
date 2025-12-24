@@ -4,7 +4,7 @@ import net.bandit.better_hp.config.BetterHPConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -13,19 +13,22 @@ import net.minecraft.world.level.GameType;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.client.renderer.RenderPipelines;
+
 
 //@EventBusSubscriber(modid = BetterhpMod.MOD_ID, value = Dist.CLIENT)
 public class HealthDisplayHandler {
 
-    private static final ResourceLocation HEALTH_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/health_icon.png");
-    private static final ResourceLocation HUNGER_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/hunger_icon.png");
-    private static final ResourceLocation ARMOR_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/armor_icon.png");
-    private static final ResourceLocation MOUNT_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/mount_icon.png");
-    private static final ResourceLocation BREATHE_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/breathe_icon.png");
-    private static final ResourceLocation TOUGHNESS_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/toughness_icon.png");
-    private static final ResourceLocation HARDCORE_HEALTH_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/hardcore_health_icon.png");
+    private static final Identifier HEALTH_ICON = Identifier.fromNamespaceAndPath("better_hp", "textures/gui/health_icon.png");
+    private static final Identifier HUNGER_ICON = Identifier.fromNamespaceAndPath("better_hp", "textures/gui/hunger_icon.png");
+    private static final Identifier ARMOR_ICON = Identifier.fromNamespaceAndPath("better_hp", "textures/gui/armor_icon.png");
+    private static final Identifier MOUNT_ICON = Identifier.fromNamespaceAndPath("better_hp", "textures/gui/mount_icon.png");
+    private static final Identifier BREATHE_ICON = Identifier.fromNamespaceAndPath("better_hp", "textures/gui/breathe_icon.png");
+    private static final Identifier TOUGHNESS_ICON = Identifier.fromNamespaceAndPath("better_hp", "textures/gui/toughness_icon.png");
+    private static final Identifier HARDCORE_HEALTH_ICON = Identifier.fromNamespaceAndPath("better_hp", "textures/gui/hardcore_health_icon.png");
 
     // Cached configuration variables
+    private static boolean didLog = false;
     private static boolean showVanillaHearts;
     private static boolean showVanillaArmor;
     private static boolean showVanillaMountHealth;
@@ -98,6 +101,16 @@ public class HealthDisplayHandler {
 
         if (minecraft.options.hideGui) {
             return;
+        }
+        if (!didLog) {
+            var rm = Minecraft.getInstance().getResourceManager();
+            System.out.println("[BetterHP] ARMOR_ICON exists? " + rm.getResource(ARMOR_ICON).isPresent());
+            System.out.println("[BetterHP] HEALTH_ICON exists? " + rm.getResource(HEALTH_ICON).isPresent());
+            System.out.println("[BetterHP] HUNGER_ICON exists? " + rm.getResource(HUNGER_ICON).isPresent());
+            System.out.println("[BetterHP] TOUGHNESS_ICON exists? " + rm.getResource(TOUGHNESS_ICON).isPresent());
+            System.out.println("[BetterHP] BREATHE_ICON exists? " + rm.getResource(BREATHE_ICON).isPresent());
+            System.out.println("[BetterHP] MOUNT_ICON exists? " + rm.getResource(MOUNT_ICON).isPresent());
+            didLog = true;
         }
 
         if (player == null || minecraft.gameMode.getPlayerMode() == GameType.CREATIVE || minecraft.gameMode.getPlayerMode() == GameType.SPECTATOR) {
@@ -216,7 +229,7 @@ public class HealthDisplayHandler {
         Font font = Minecraft.getInstance().font;
         int used = 0;
 
-        ResourceLocation healthIcon =
+        Identifier healthIcon =
                 (Minecraft.getInstance().level != null && Minecraft.getInstance().level.getLevelData().isHardcore())
                         ? HARDCORE_HEALTH_ICON
                         : HEALTH_ICON;
@@ -327,7 +340,6 @@ public class HealthDisplayHandler {
     }
 
 
-
     private static int getDynamicHealthColor(Player player) {
         float health = player.getHealth();
         float maxHealth = player.getMaxHealth();
@@ -363,14 +375,8 @@ public class HealthDisplayHandler {
         return (r << 16) | (g << 8) | b;
     }
 
-    private static void drawIcon(GuiGraphics g, ResourceLocation icon, int x, int y, int w, int h) {
-        g.pose().pushMatrix();
-        g.pose().translate((float)x, (float)y);
-        g.pose().scale(w / 16f, h / 16f);
-
-        g.blit(icon, 0, 0, 0, 0, 16, 16, 16, 16);
-
-        g.pose().popMatrix();
+    private static void drawIcon(GuiGraphics g, Identifier tex, int x, int y, int w, int h) {
+        g.blit(RenderPipelines.GUI_TEXTURED, tex, x, y, 0, 0, w, h, 16, 16, 0xFFFFFFFF);
     }
 
     private static void drawShadowedText(GuiGraphics guiGraphics, Font font, String text, int x, int y, int color) {
