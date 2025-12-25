@@ -6,7 +6,8 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -20,22 +21,22 @@ import com.mojang.blaze3d.systems.RenderSystem;
 
 public class HealthDisplayHandler implements HudRenderCallback {
 
-    private static final ResourceLocation HEALTH_ICON =
-            ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/health_icon.png");
-    private static final ResourceLocation HUNGER_ICON =
-            ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/hunger_icon.png");
-    private static final ResourceLocation NO_HUNGER_ICON =
-            ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/no_hunger_icon.png");
-    private static final ResourceLocation ARMOR_ICON =
-            ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/armor_icon.png");
-    private static final ResourceLocation BREATHE_ICON =
-            ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/breathe_icon.png");
-    private static final ResourceLocation TOUGHNESS_ICON =
-            ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/toughness_icon.png");
-    private static final ResourceLocation HARDCORE_HEALTH_ICON =
-            ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/hardcore_health_icon.png");
-    private static final ResourceLocation MOUNT_ICON =
-            ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/mount_icon.png");
+    private static final Identifier HEALTH_ICON =
+            Identifier.fromNamespaceAndPath("betterhp_fabric", "textures/gui/health_icon.png");
+    private static final Identifier HUNGER_ICON =
+            Identifier.fromNamespaceAndPath("betterhp_fabric", "textures/gui/hunger_icon.png");
+    private static final Identifier NO_HUNGER_ICON =
+            Identifier.fromNamespaceAndPath("betterhp_fabric", "textures/gui/no_hunger_icon.png");
+    private static final Identifier ARMOR_ICON =
+            Identifier.fromNamespaceAndPath("betterhp_fabric", "textures/gui/armor_icon.png");
+    private static final Identifier BREATHE_ICON =
+            Identifier.fromNamespaceAndPath("betterhp_fabric", "textures/gui/breathe_icon.png");
+    private static final Identifier TOUGHNESS_ICON =
+            Identifier.fromNamespaceAndPath("betterhp_fabric", "textures/gui/toughness_icon.png");
+    private static final Identifier HARDCORE_HEALTH_ICON =
+            Identifier.fromNamespaceAndPath("betterhp_fabric", "textures/gui/hardcore_health_icon.png");
+    private static final Identifier MOUNT_ICON =
+            Identifier.fromNamespaceAndPath("betterhp_fabric", "textures/gui/mount_icon.png");
 
     private int armorBounceTicks = 0;
     private int toughnessBounceTicks = 0;
@@ -98,7 +99,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
         profiler.push("betterhp_healthIcon");
         try {
             if (ConfigManager.showHealthIcon()) {
-                ResourceLocation icon = isHardcore ? HARDCORE_HEALTH_ICON : HEALTH_ICON;
+                Identifier icon = isHardcore ? HARDCORE_HEALTH_ICON : HEALTH_ICON;
                 renderIcon(guiGraphics, icon, healthPosX - 18, healthPosY - 4);
 
                 int shakeOffset = 0;
@@ -145,7 +146,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
                     }
                 }
 
-                ResourceLocation hungerIconToUse = hasHungerEffect ? NO_HUNGER_ICON : HUNGER_ICON;
+                Identifier hungerIconToUse = hasHungerEffect ? NO_HUNGER_ICON : HUNGER_ICON;
                 renderIcon(guiGraphics, hungerIconToUse, hungerPosX, hungerPosY - 4);
             }
         } finally {
@@ -277,7 +278,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
         }
     }
 
-    private void renderIcon(GuiGraphics gg, ResourceLocation icon, int x, int y) {
+    private void renderIcon(GuiGraphics gg, Identifier icon, int x, int y) {
         gg.blit(RenderPipelines.GUI_TEXTURED, icon, x, y, 0, 0, 16, 16, 16, 16);
     }
 
