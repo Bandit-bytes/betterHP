@@ -156,6 +156,47 @@ public class BetterHPConfig {
             .comment("Hide saturation number when vanilla hunger bar is enabled")
             .define("hideSaturationIfVanillaHunger", true);
 
+    public static final ModConfigSpec.BooleanValue showMana = CLIENT_BUILDER
+            .comment("Show Iron's Spells & Spellbooks mana value (only when Iron's is installed)")
+            .define("showMana", true);
+
+    public static final ModConfigSpec.BooleanValue showNumericMana = CLIENT_BUILDER
+            .comment("Show numeric mana value")
+            .define("showNumericMana", true);
+
+    public static final ModConfigSpec.BooleanValue showManaIcon = CLIENT_BUILDER
+            .comment("Show mana icon")
+            .define("showManaIcon", true);
+
+    public static final ModConfigSpec.BooleanValue manaFollowHealthWidth = CLIENT_BUILDER
+            .comment("Place mana right after the rendered health text so it never overlaps")
+            .define("manaFollowHealthWidth", true);
+
+    public static final ModConfigSpec.IntValue manaOffsetX = CLIENT_BUILDER
+            .comment("Mana X offset relative to the health anchor (used if manaFollowHealthWidth=false)")
+            .defineInRange("manaOffsetX", 122, -1000, 1000);
+
+    public static final ModConfigSpec.IntValue manaOffsetY = CLIENT_BUILDER
+            .comment("Mana Y offset relative to the health anchor (positive moves up in your coordinate system if you add to healthY)")
+            .defineInRange("manaOffsetY", 0, -1000, 1000);
+
+    public static final ModConfigSpec.BooleanValue showIronsMana = CLIENT_BUILDER
+            .comment("Show Iron's Spells & Spellbooks mana in the BetterHP HUD (requires irons_spellbooks)")
+            .define("showIronsMana", true);
+
+    public static final ModConfigSpec.BooleanValue disableIronsManaBar = CLIENT_BUILDER
+            .comment("If true, BetterHP will attempt to disable Iron's own mana bar so only BetterHP renders it.")
+            .define("disableIronsManaBar", true);
+
+    public static final ModConfigSpec.BooleanValue enableIronsManaCompat = CLIENT_BUILDER
+            .comment("If Iron's Spells & Spellbooks is installed, render BetterHP's mana display.")
+            .define("enableIronsManaCompat", true);
+
+    public static final ModConfigSpec.BooleanValue hideIronsManaOverlay = CLIENT_BUILDER
+            .comment("If enabled, BetterHP will hide Iron's default mana bar when compat is active.")
+            .define("hideIronsManaOverlay", true);
+
+
     public static final ModConfigSpec CLIENT_SPEC = CLIENT_BUILDER.build();
 
     public static boolean customHUDEnabled;
@@ -167,6 +208,7 @@ public class BetterHPConfig {
     public static int toughnessX, toughnessY;
     public static boolean mountIconEnabled;
     public static boolean vanillaMountHeartsEnabled;
+    public static boolean manaEnabled;
     public static int mountX, mountY;
 
 
@@ -193,6 +235,8 @@ public class BetterHPConfig {
         vanillaMountHeartsEnabled = showVanillaMountHealth.get();
         mountX = mountDisplayX.get();
         mountY = mountDisplayY.get();
+        manaEnabled = showMana.get();
+
 
     }
 

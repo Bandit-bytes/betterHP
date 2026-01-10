@@ -2,6 +2,7 @@ package net.bandit.better_hp.event;
 
 import net.bandit.better_hp.BetterhpMod;
 import net.bandit.better_hp.config.BetterHPConfig;
+import net.bandit.better_hp.integration.IronsSpellbooksCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,6 +19,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import org.jetbrains.annotations.Nullable;
 
+
 @EventBusSubscriber(modid = BetterhpMod.MOD_ID, value = Dist.CLIENT)
 public class HealthDisplayHandler {
 
@@ -28,6 +30,7 @@ public class HealthDisplayHandler {
     private static final ResourceLocation BREATHE_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/breathe_icon.png");
     private static final ResourceLocation TOUGHNESS_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/toughness_icon.png");
     private static final ResourceLocation HARDCORE_HEALTH_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/hardcore_health_icon.png");
+    private static final ResourceLocation MANA_ICON = ResourceLocation.fromNamespaceAndPath("better_hp", "textures/gui/mana_icon.png");
 
     // Cached configuration variables
     private static boolean showVanillaHearts;
@@ -43,6 +46,8 @@ public class HealthDisplayHandler {
     private static boolean showArmorIcon;
     private static boolean showToughnessIcon;
     private static boolean showHungerIcon;
+    public static boolean manaEnabled;
+
 
     private static int armorBounceTicks = 0;
     private static int toughnessBounceTicks = 0;
@@ -187,6 +192,23 @@ public class HealthDisplayHandler {
 
         drawOxygen(guiGraphics, air, maxAir, screenWidth, screenHeight, oxygenX, oxygenY, showBreatheIcon, showNumericOxygen);
 
+        // --- Iron's mana (optional) ---
+        if (BetterHPConfig.enableIronsManaCompat.get() && BetterHPConfig.showMana.get()) {
+            var mana = IronsSpellbooksCompat.getMana(player);
+            if (mana != null) {
+                int baseX = healthX;
+                int baseY = healthY + BetterHPConfig.manaOffsetY.get();
+
+                int follow = BetterHPConfig.manaFollowHealthWidth.get() ? healthUsed : 0;
+                int manaX = baseX + follow + BetterHPConfig.manaOffsetX.get();
+                int manaY = baseY;
+
+                drawMana(guiGraphics, mana.mana(), mana.maxMana(),
+                        screenWidth, screenHeight, manaX, manaY,
+                        BetterHPConfig.showManaIcon.get(), BetterHPConfig.showNumericMana.get());
+            }
+        }
+
         // Absorption text (follows health width and then applies offsets)
         if (BetterHPConfig.showAbsorptionText.get() && absorption > 0) {
             int baseX = (screenWidth / 2) + healthX;
@@ -212,7 +234,25 @@ public class HealthDisplayHandler {
             guiGraphics.drawString(Minecraft.getInstance().font, mountHealth + "/" + mountMaxHealth, mountX, mountY, 0xAA77FF);
         }
     }
+    private static void drawMana(GuiGraphics guiGraphics, int mana, int maxMana,
+                                 int screenWidth, int screenHeight,
+                                 int x, int y, boolean showIcon, boolean showNumeric) {
 
+        Minecraft mc = Minecraft.getInstance();
+        Font font = mc.font;
+
+        String manaText = mana + "/" + maxMana;
+        int textWidth = font.width(manaText);
+
+        int color = 0x2F7DFF;
+
+        if (showNumeric) {
+            drawShadowedText(guiGraphics, font, manaText, (screenWidth / 2) + x, screenHeight - y, color);
+        }
+        if (showIcon) {
+            drawIcon(guiGraphics, MANA_ICON, (screenWidth / 2) + x + textWidth, screenHeight - y - 4, 16, 16);
+        }
+    }
 
     private static int drawHealth(GuiGraphics g, Player player, float health, float maxHealth,
                                   int textColor, int sw, int sh, int x, int y,

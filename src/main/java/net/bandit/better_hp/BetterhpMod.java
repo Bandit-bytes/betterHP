@@ -1,12 +1,13 @@
 package net.bandit.better_hp;
 
-import com.mojang.logging.LogUtils;
 import net.bandit.better_hp.config.BetterHPConfig;
 import net.bandit.better_hp.event.HealthDisplayHandler;
+import net.bandit.better_hp.integration.IronsSpellbooksCompat;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
@@ -26,28 +27,32 @@ public class BetterhpMod {
     }
 
     public BetterhpMod(IEventBus modEventBus, ModContainer modContainer) {
-        // Register common setup
         modEventBus.addListener(this::commonSetup);
-
-        // Register the configuration handler to the mod event bus
         modEventBus.addListener(BetterHPConfig::onConfigLoad);
-
-        // Register the configuration file
         modContainer.registerConfig(ModConfig.Type.CLIENT, BetterHPConfig.CLIENT_SPEC);
     }
+
     @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-    }
+    public void onServerStarting(ServerStartingEvent event) {}
 
     private void commonSetup(final FMLCommonSetupEvent event) {
         LOGGER.info("Common setup complete for Better HP mod");
     }
+
     @EventBusSubscriber(modid = BetterhpMod.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
-            // Load the configuration values after the client setup event
-            HealthDisplayHandler.loadCachedConfigValues();
+            event.enqueueWork(() -> {
+                HealthDisplayHandler.loadCachedConfigValues();
+
+                if (ModList.get().isLoaded("irons_spellbooks")) {
+                    LOGGER.info("Iron's Spells & Spellbooks detected - enabling mana compat.");
+                    IronsSpellbooksCompat.initClient();
+                } else {
+                    LOGGER.info("Iron's Spells & Spellbooks not detected - mana compat disabled.");
+                }
+            });
         }
     }
 }
