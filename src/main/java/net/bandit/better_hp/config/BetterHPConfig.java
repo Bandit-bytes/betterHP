@@ -38,6 +38,30 @@ public class BetterHPConfig {
         public final ForgeConfigSpec.IntValue healthColor;
         public final ForgeConfigSpec.BooleanValue showDecimalHealth;
         public final ForgeConfigSpec.BooleanValue showHealthOutline;
+        public final ForgeConfigSpec.BooleanValue showVanillaMountHealth;
+        public final ForgeConfigSpec.BooleanValue showMountIcon;
+        public final ForgeConfigSpec.IntValue mountDisplayX;
+        public final ForgeConfigSpec.IntValue mountDisplayY;
+        public final ForgeConfigSpec.BooleanValue showToughnessIcon;
+        public final ForgeConfigSpec.IntValue toughnessDisplayX;
+        public final ForgeConfigSpec.IntValue toughnessDisplayY;
+        public final ForgeConfigSpec.BooleanValue showAbsorptionText;
+        public final ForgeConfigSpec.BooleanValue absorptionFollowHealthWidth;
+        public final ForgeConfigSpec.IntValue absorptionOffsetX;
+        public final ForgeConfigSpec.IntValue absorptionOffsetY;
+        public final ForgeConfigSpec.BooleanValue showSaturationText;
+        public final ForgeConfigSpec.BooleanValue hideSaturationIfVanillaHunger;
+        public final ForgeConfigSpec.BooleanValue enableIronsManaCompat;
+        public final ForgeConfigSpec.BooleanValue hideIronsManaOverlay;
+
+        public final ForgeConfigSpec.BooleanValue showMana;
+        public final ForgeConfigSpec.BooleanValue showNumericMana;
+        public final ForgeConfigSpec.BooleanValue showManaIcon;
+
+        public final ForgeConfigSpec.BooleanValue manaFollowHealthWidth;
+        public final ForgeConfigSpec.IntValue manaOffsetX;
+        public final ForgeConfigSpec.IntValue manaOffsetY;
+
 
         public Client(ForgeConfigSpec.Builder builder) {
             builder.push("Display Settings");
@@ -99,7 +123,7 @@ public class BetterHPConfig {
 
             healthDisplayX = builder
                     .comment("Horizontal position of the health icon display")
-                    .defineInRange("healthDisplayX", -70, -1000, 1000);
+                    .defineInRange("healthDisplayX", -85, -1000, 1000);
 
             healthDisplayY = builder
                     .comment("Vertical position of the health icon display")
@@ -107,7 +131,7 @@ public class BetterHPConfig {
 
             armorDisplayX = builder
                     .comment("Horizontal position of the armor icon display")
-                    .defineInRange("armorDisplayX", -70, -1000, 1000);
+                    .defineInRange("armorDisplayX", -85, -1000, 1000);
 
             armorDisplayY = builder
                     .comment("Vertical position of the armor icon display")
@@ -115,7 +139,7 @@ public class BetterHPConfig {
 
             hungerDisplayX = builder
                     .comment("Horizontal position of the hunger icon display")
-                    .defineInRange("hungerDisplayX", 66, -1000, 1000);
+                    .defineInRange("hungerDisplayX", 70, -1000, 1000);
 
             hungerDisplayY = builder
                     .comment("Vertical position of the hunger icon display")
@@ -123,7 +147,7 @@ public class BetterHPConfig {
 
             oxygenDisplayX = builder
                     .comment("Horizontal position of the oxygen icon display")
-                    .defineInRange("oxygenDisplayX", 67, -1000, 1000); // Placed above hunger
+                    .defineInRange("oxygenDisplayX", 70, -1000, 1000);
 
             oxygenDisplayY = builder
                     .comment("Vertical position of the oxygen icon display")
@@ -135,6 +159,91 @@ public class BetterHPConfig {
 
             builder.comment("Enable or disable black outline around health numerical values.");
             showHealthOutline = builder.define("showHealthOutline", false);
+
+            showToughnessIcon = builder
+                    .comment("Show custom toughness icon")
+                    .define("showToughnessIcon", true);
+
+            toughnessDisplayX = builder
+                    .comment("Horizontal position of the toughness icon display")
+                    .defineInRange("toughnessDisplayX", 35, -1000, 1000);
+
+            toughnessDisplayY = builder
+                    .comment("Vertical position of the toughness icon display")
+                    .defineInRange("toughnessDisplayY", 56, 0, 1000);
+
+            showVanillaMountHealth = builder
+                    .comment("Show vanilla mount hearts (when riding an entity like a horse)")
+                    .define("showVanillaMountHealth", false);
+
+            showMountIcon = builder
+                    .comment("Show custom mount health icon and value on HUD when riding")
+                    .define("showMountIcon", true);
+
+            mountDisplayX = builder
+                    .comment("Horizontal position of the mount health icon display")
+                    .defineInRange("mountDisplayX", -140, -1000, 1000);
+
+            mountDisplayY = builder
+                    .comment("Vertical position of the mount health icon display")
+                    .defineInRange("mountDisplayY", 43, 0, 1000);
+
+            showAbsorptionText = builder
+                    .comment("Show +Absorption numeric text")
+                    .define("showAbsorptionText", true);
+
+            absorptionFollowHealthWidth = builder
+                    .comment("Place absorption right after the rendered health text so it never overlaps")
+                    .define("absorptionFollowHealthWidth", true);
+
+            absorptionOffsetX = builder
+                    .comment("Absorption X offset RELATIVE to the health anchor (used if absorptionFollowHealthWidth=false)")
+                    .defineInRange("absorptionOffsetX", -18, -1000, 1000);
+
+            absorptionOffsetY = builder
+                    .comment("Absorption Y offset RELATIVE to the health anchor")
+                    .defineInRange("absorptionOffsetY", 0, -1000, 1000);
+
+            showSaturationText = builder
+                    .comment("Show +Saturation numeric text")
+                    .define("showSaturationText", true);
+
+            hideSaturationIfVanillaHunger = builder
+                    .comment("Hide saturation number when vanilla hunger bar is enabled")
+                    .define("hideSaturationIfVanillaHunger", true);
+
+            enableIronsManaCompat = builder
+                    .comment("If Iron's Spells & Spellbooks is installed, render BetterHP's mana display.")
+                    .define("enableIronsManaCompat", true);
+
+            hideIronsManaOverlay = builder
+                    .comment("If enabled, BetterHP will hide Iron's default mana bar when compat is active.")
+                    .define("hideIronsManaOverlay", true);
+
+            showMana = builder
+                    .comment("Show Iron's Spells & Spellbooks mana value (only when Iron's is installed)")
+                    .define("showMana", true);
+
+            showNumericMana = builder
+                    .comment("Show numeric mana value")
+                    .define("showNumericMana", true);
+
+            showManaIcon = builder
+                    .comment("Show mana icon")
+                    .define("showManaIcon", true);
+
+            manaFollowHealthWidth = builder
+                    .comment("Place mana right after the rendered health text so it never overlaps")
+                    .define("manaFollowHealthWidth", true);
+
+            manaOffsetX = builder
+                    .comment("Mana X offset relative to the health anchor (used if manaFollowHealthWidth=false)")
+                    .defineInRange("manaOffsetX", 150, -1000, 1000);
+
+            manaOffsetY = builder
+                    .comment("Mana Y offset relative to the health anchor")
+                    .defineInRange("manaOffsetY", 0, -1000, 1000);
+
 
             builder.pop();
         }

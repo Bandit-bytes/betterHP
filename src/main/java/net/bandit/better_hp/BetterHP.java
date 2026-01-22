@@ -1,6 +1,7 @@
 package net.bandit.better_hp;
 
 import net.bandit.better_hp.config.BetterHPConfig;
+import net.bandit.better_hp.event.HealthDisplayHandler;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -17,6 +18,7 @@ public class BetterHP {
     public BetterHP() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, BetterHPConfig.CLIENT_SPEC);
 
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onConfigLoad);
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
 
@@ -29,8 +31,14 @@ public class BetterHP {
     private void setup(final FMLCommonSetupEvent event) {
 
     }
+    private void onConfigLoad(final net.minecraftforge.fml.event.config.ModConfigEvent event) {
+        if (event.getConfig().getSpec() == BetterHPConfig.CLIENT_SPEC) {
+            net.bandit.better_hp.event.HealthDisplayHandler.initializeConfigs();
+        }
+    }
+
 
     private void clientSetup(final FMLClientSetupEvent event) {
-
+        HealthDisplayHandler.initializeConfigs();
     }
 }
