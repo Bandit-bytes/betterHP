@@ -15,7 +15,6 @@ public class VanillaHudMixin {
     @Inject(method = "renderHearts", at = @At("HEAD"), cancellable = true)
     private void onRenderHearts(GuiGraphics guiGraphics, Player player, int x, int y, int height, int offsetHeartIndex, float maxHealth, int currentHealth, int displayHealth, int absorptionAmount, boolean renderHighlight, CallbackInfo ci) {
         if (!BetterHPConfig.showVanillaHearts.get()) {
-            // Cancel the vanilla health rendering if the config disables it
             ci.cancel();
         }
     }
@@ -23,7 +22,6 @@ public class VanillaHudMixin {
     @Inject(method = "renderFoodLevel", at = @At("HEAD"), cancellable = true)
     private void onRenderFood(GuiGraphics p_283143_, CallbackInfo ci) {
         if (!BetterHPConfig.showVanillaHunger.get()) {
-            // Cancel the vanilla hunger rendering if the config disables it
             ci.cancel();
         }
     }
@@ -31,7 +29,6 @@ public class VanillaHudMixin {
     @Inject(method = "renderArmorLevel", at = @At("HEAD"), cancellable = true)
     private void onRenderArmor(GuiGraphics p_283143_, CallbackInfo ci) {
         if (!BetterHPConfig.showVanillaArmor.get()) {
-            // Cancel the vanilla armor rendering if the config disables it
             ci.cancel();
         }
     }
@@ -39,14 +36,13 @@ public class VanillaHudMixin {
     @Inject(method = "renderAirLevel", at = @At("HEAD"), cancellable = true)
     private void onRenderOxygen(GuiGraphics p_283143_, CallbackInfo ci) {
         if (!BetterHPConfig.showVanillaOxygen.get()) {
-            // Cancel the vanilla oxygen rendering if the config disables it
             ci.cancel();
         }
     }
     @Inject(method = "renderVehicleHealth", at = @At("HEAD"), cancellable = true)
     private void onRenderMountHealth(GuiGraphics guiGraphics, CallbackInfo ci) {
         if (!BetterHPConfig.showVanillaMountHealth.get()) {
-            ci.cancel(); // Cancel vanilla horse hearts if config says so
+            ci.cancel();
         }
     }
 }

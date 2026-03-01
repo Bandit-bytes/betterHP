@@ -196,6 +196,14 @@ public class BetterHPConfig {
             .comment("If enabled, BetterHP will hide Iron's default mana bar when compat is active.")
             .define("hideIronsManaOverlay", true);
 
+    public static final ModConfigSpec.IntValue selectedItemNameOffsetY = CLIENT_BUILDER
+            .comment("Moves the vanilla held-item name text (e.g., 'Splash Potion of Healing'). Negative = higher, Positive = lower.")
+            .defineInRange("selectedItemNameOffsetY", -10, -40, 40);
+
+    public static final ModConfigSpec.BooleanValue moveSelectedItemNameOnlyWhenArmor = CLIENT_BUILDER
+            .comment("Only apply the selected item name offset when the player has armor > 0.")
+            .define("moveSelectedItemNameOnlyWhenArmor", true);
+
 
     public static final ModConfigSpec CLIENT_SPEC = CLIENT_BUILDER.build();
 
@@ -210,6 +218,8 @@ public class BetterHPConfig {
     public static boolean vanillaMountHeartsEnabled;
     public static boolean manaEnabled;
     public static int mountX, mountY;
+    public static int selectedItemNameYOff;
+    public static boolean selectedItemNameOnlyWhenArmor;
 
 
     @SubscribeEvent
@@ -236,6 +246,8 @@ public class BetterHPConfig {
         mountX = mountDisplayX.get();
         mountY = mountDisplayY.get();
         manaEnabled = showMana.get();
+        selectedItemNameYOff = selectedItemNameOffsetY.get();
+        selectedItemNameOnlyWhenArmor = moveSelectedItemNameOnlyWhenArmor.get();
 
 
     }

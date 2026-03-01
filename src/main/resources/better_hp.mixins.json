@@ -4,7 +4,7 @@
   "package": "net.bandit.better_hp.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "VanillaHudMixin"
+    "SelectedItemNameOffsetMixin"
   ],
   "injectors": {
     "defaultRequire": 1
