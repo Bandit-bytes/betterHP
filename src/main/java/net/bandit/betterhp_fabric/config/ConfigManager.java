@@ -66,6 +66,7 @@ public class ConfigManager {
     public static boolean showNumericHunger() { return configData != null && configData.showNumericHunger; }
     public static boolean showNumericOxygen() { return configData != null && configData.showNumericOxygen; }
     public static boolean showSaturation() { return configData != null && configData.showSaturation; }
+    public static int selectedItemNameOffsetY() {return configData != null ? configData.selectedItemNameOffsetY : -10; }
 
     public static int healthDisplayX() { return configData != null ? configData.healthDisplayX : -70; }
     public static int healthDisplayY() { return configData != null ? configData.healthDisplayY : 43; }
@@ -81,6 +82,7 @@ public class ConfigManager {
     public static int saturationDisplayY() { return configData != null ? configData.saturationDisplayY : 43; }
     public static int mountDisplayX() {return configData != null ?configData.mountDisplayX: -85; }
     public static int mountDisplayY() { return configData != null ? configData.mountDisplayY: 60; }
+    public static boolean selectedItemNameOnlyWhenArmor() {return configData != null && configData.selectedItemNameOnlyWhenArmor; }
 
     public static ConfigData getConfigData() {
         if (configData == null) loadConfig();
@@ -102,6 +104,7 @@ public class ConfigManager {
         public boolean showNumericHunger = true;
         public boolean showNumericOxygen = true;
         public boolean showSaturation = true;
+        boolean selectedItemNameOnlyWhenArmor = true;
 
         int healthDisplayX = -85;
         int healthDisplayY = 43;
@@ -117,5 +120,6 @@ public class ConfigManager {
         int saturationDisplayY = 43;
         int mountDisplayX = 0;
         int mountDisplayY = 120;
+        int selectedItemNameOffsetY = -3;
     }
 }

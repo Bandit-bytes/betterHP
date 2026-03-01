@@ -3,7 +3,8 @@
 	"package": "net.bandit.betterhp_fabric.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"VanillaHudMixin"
+		"VanillaHudMixin",
+		"SelectedItemNameOffsetMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

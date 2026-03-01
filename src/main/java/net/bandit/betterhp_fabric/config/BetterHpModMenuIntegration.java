@@ -223,6 +223,20 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 })
                 .build());
 
+        general.addEntry(entryBuilder.startIntField(
+                        Component.translatable("config.betterhp.selectedItemNameOffsetY"),
+                        ConfigManager.selectedItemNameOffsetY()
+                ).setDefaultValue(-3)
+                .setSaveConsumer(v -> { ConfigManager.getConfigData().selectedItemNameOffsetY = v; ConfigManager.saveConfig(); })
+                .build());
+
+        general.addEntry(entryBuilder.startBooleanToggle(
+                        Component.translatable("config.betterhp.selectedItemNameOnlyWhenArmor"),
+                        ConfigManager.selectedItemNameOnlyWhenArmor()
+                ).setDefaultValue(true)
+                .setSaveConsumer(v -> { ConfigManager.getConfigData().selectedItemNameOnlyWhenArmor = v; ConfigManager.saveConfig(); })
+                .build());
+
 
 
         builder.setSavingRunnable(ConfigManager::saveConfig);
