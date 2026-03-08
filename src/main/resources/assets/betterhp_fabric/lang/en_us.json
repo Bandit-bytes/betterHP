@@ -25,5 +25,7 @@
   "config.betterhp.mountDisplayX": "Mount Display X Position",
   "config.betterhp.mountDisplayY": "Mount Display Y Position",
   "config.betterhp.selectedItemNameOffsetY": "Selected item name Offset Y (neg is higher)",
-  "config.betterhp.selectedItemNameOnlyWhenArmor": "Selected item name name offset applied only when armor is on."
+  "config.betterhp.selectedItemNameOnlyWhenArmor": "Selected item name name offset applied only when armor is on.",
+  "config.betterhp.showMountHealth": "Show Mount Health",
+  "config.betterhp.mountHealthMobBlacklist": "Mount Health Mob Blacklist"
 }

@@ -1,12 +1,12 @@
 {
-	"required": true,
-	"package": "net.bandit.betterhp_fabric.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"mixins": [
-		"VanillaHudMixin",
-		"SelectedItemNameOffsetMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	}
+  "required": true,
+  "package": "net.bandit.betterhp_fabric.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "SelectedItemNameOffsetMixin",
+    "VanillaHudMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

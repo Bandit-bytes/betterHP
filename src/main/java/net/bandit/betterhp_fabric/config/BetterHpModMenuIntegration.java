@@ -8,6 +8,8 @@ import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
+import java.util.ArrayList;
+
 
 public class BetterHpModMenuIntegration implements ModMenuApi {
 
@@ -235,6 +237,26 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                         ConfigManager.selectedItemNameOnlyWhenArmor()
                 ).setDefaultValue(true)
                 .setSaveConsumer(v -> { ConfigManager.getConfigData().selectedItemNameOnlyWhenArmor = v; ConfigManager.saveConfig(); })
+                .build());
+
+        general.addEntry(entryBuilder.startBooleanToggle(
+                        Component.translatable("config.betterhp.showMountHealth"),
+                        ConfigManager.showMountHealth()
+                ).setDefaultValue(true)
+                .setSaveConsumer(newValue -> {
+                    ConfigManager.getConfigData().showMountHealth = newValue;
+                    ConfigManager.saveConfig();
+                })
+                .build());
+
+        general.addEntry(entryBuilder.startStrList(
+                        Component.translatable("config.betterhp.mountHealthMobBlacklist"),
+                        new ArrayList<>(ConfigManager.mountHealthMobBlacklist())
+                ).setDefaultValue(new ArrayList<>())
+                .setSaveConsumer(newValue -> {
+                    ConfigManager.getConfigData().mountHealthMobBlacklist = new ArrayList<>(newValue);
+                    ConfigManager.saveConfig();
+                })
                 .build());
 
 

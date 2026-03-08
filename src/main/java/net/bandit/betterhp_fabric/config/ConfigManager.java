@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConfigManager {
 
@@ -26,13 +28,19 @@ public class ConfigManager {
         if (!CONFIG_FILE.exists()) {
             System.out.println("Configuration file does not exist. Creating new config with default values.");
             configData = new ConfigData();
-            saveConfig(); // Save default
+            saveConfig();
         } else {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {
                 configData = GSON.fromJson(reader, ConfigData.class);
                 if (configData == null) {
                     throw new IOException("Config file contains invalid data.");
                 }
+
+                // Safety for older configs
+                if (configData.mountHealthMobBlacklist == null) {
+                    configData.mountHealthMobBlacklist = new ArrayList<>();
+                }
+
                 System.out.println("Configuration loaded from " + CONFIG_FILE.getName());
             } catch (IOException e) {
                 System.err.println("Error reading configuration file: " + e.getMessage());
@@ -66,7 +74,8 @@ public class ConfigManager {
     public static boolean showNumericHunger() { return configData != null && configData.showNumericHunger; }
     public static boolean showNumericOxygen() { return configData != null && configData.showNumericOxygen; }
     public static boolean showSaturation() { return configData != null && configData.showSaturation; }
-    public static int selectedItemNameOffsetY() {return configData != null ? configData.selectedItemNameOffsetY : -10; }
+    public static boolean showMountHealth() { return configData != null && configData.showMountHealth; }
+    public static int selectedItemNameOffsetY() { return configData != null ? configData.selectedItemNameOffsetY : -10; }
 
     public static int healthDisplayX() { return configData != null ? configData.healthDisplayX : -70; }
     public static int healthDisplayY() { return configData != null ? configData.healthDisplayY : 43; }
@@ -80,9 +89,15 @@ public class ConfigManager {
     public static int breatheDisplayY() { return configData != null ? configData.breatheDisplayY : 60; }
     public static int saturationDisplayX() { return configData != null ? configData.saturationDisplayX : 15; }
     public static int saturationDisplayY() { return configData != null ? configData.saturationDisplayY : 43; }
-    public static int mountDisplayX() {return configData != null ?configData.mountDisplayX: -85; }
-    public static int mountDisplayY() { return configData != null ? configData.mountDisplayY: 60; }
-    public static boolean selectedItemNameOnlyWhenArmor() {return configData != null && configData.selectedItemNameOnlyWhenArmor; }
+    public static int mountDisplayX() { return configData != null ? configData.mountDisplayX : -140; }
+    public static int mountDisplayY() { return configData != null ? configData.mountDisplayY : 45; }
+    public static boolean selectedItemNameOnlyWhenArmor() { return configData != null && configData.selectedItemNameOnlyWhenArmor; }
+
+    public static List<String> mountHealthMobBlacklist() {
+        return configData != null && configData.mountHealthMobBlacklist != null
+                ? configData.mountHealthMobBlacklist
+                : List.of();
+    }
 
     public static ConfigData getConfigData() {
         if (configData == null) loadConfig();
@@ -104,6 +119,7 @@ public class ConfigManager {
         public boolean showNumericHunger = true;
         public boolean showNumericOxygen = true;
         public boolean showSaturation = true;
+        public boolean showMountHealth = true;
         boolean selectedItemNameOnlyWhenArmor = true;
 
         int healthDisplayX = -85;
@@ -118,8 +134,12 @@ public class ConfigManager {
         int breatheDisplayY = 60;
         int saturationDisplayX = 40;
         int saturationDisplayY = 43;
-        int mountDisplayX = 0;
-        int mountDisplayY = 120;
+        int mountDisplayX = -140;
+        int mountDisplayY = 45;
         int selectedItemNameOffsetY = -3;
+
+        public List<String> mountHealthMobBlacklist = new ArrayList<>(List.of(
+                "minecraft:camel"
+        ));
     }
 }

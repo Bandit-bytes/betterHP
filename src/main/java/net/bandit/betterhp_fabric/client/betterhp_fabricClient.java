@@ -7,7 +7,6 @@ public class betterhp_fabricClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        // Register the HealthDisplayHandler to the HudRenderCallback event
         HudRenderCallback.EVENT.register(new HealthDisplayHandler());
     }
 }

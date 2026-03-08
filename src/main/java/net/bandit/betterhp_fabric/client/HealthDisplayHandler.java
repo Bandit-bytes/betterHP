@@ -7,10 +7,12 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 
@@ -127,7 +129,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
         minecraft.getProfiler().pop();
 
         minecraft.getProfiler().push("betterhp_armorIcon");
-        int toughness = Mth.ceil(player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS).getValue());
+        int toughness = Mth.ceil(player.getAttribute(Attributes.ARMOR_TOUGHNESS).getValue());
 
         if (armorValue != lastRenderedArmorValue) {
             armorBounceTicks = 10;
@@ -199,9 +201,9 @@ public class HealthDisplayHandler implements HudRenderCallback {
 
         minecraft.getProfiler().push("betterhp_mountIcon");
 
-        if (ConfigManager.showHealthIcon()) {
+        if (ConfigManager.showMountHealth()) {
             var mount = getMountWithHealth(player);
-            if (mount != null) {
+            if (mount != null && shouldRenderCustomMountHealth(mount)) {
                 int mountHealth = Mth.ceil(mount.getHealth());
                 int mountMaxHealth = Mth.ceil(mount.getMaxHealth());
 
@@ -217,6 +219,8 @@ public class HealthDisplayHandler implements HudRenderCallback {
 
         minecraft.getProfiler().pop();
 
+        minecraft.getProfiler().pop();
+
     }
 
     private void renderIcon(GuiGraphics guiGraphics, ResourceLocation icon, int x, int y) {
@@ -225,7 +229,10 @@ public class HealthDisplayHandler implements HudRenderCallback {
     }
 
     private void drawShadowedText(GuiGraphics guiGraphics, Minecraft minecraft, String text, int x, int y, int color) {
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(0.0D, 0.0D, 200.0D);
         guiGraphics.drawString(minecraft.font, text, x, y, color, true);
+        guiGraphics.pose().popPose();
     }
 
     private int interpolateColor(float ratio, int colorStart, int colorEnd) {
@@ -299,5 +306,13 @@ public class HealthDisplayHandler implements HudRenderCallback {
             }
         }
         return null;
+    }
+    private boolean shouldRenderCustomMountHealth(LivingEntity mount) {
+        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(mount.getType());
+        if (id == null) {
+            return true;
+        }
+
+        return !ConfigManager.mountHealthMobBlacklist().contains(id.toString());
     }
 }
