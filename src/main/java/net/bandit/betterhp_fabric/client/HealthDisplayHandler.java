@@ -5,6 +5,7 @@ import net.bandit.betterhp_fabric.config.ConfigManager;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -32,8 +33,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
     private int lastRenderedToughness = 0;
 
 
-    @Override
-    public void onHudRender(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    public void renderHud(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
 
@@ -44,6 +44,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
         if (player == null || minecraft.gameMode.getPlayerMode() == GameType.CREATIVE || minecraft.gameMode.getPlayerMode() == GameType.SPECTATOR) {
             return;
         }
+
 
         boolean isHardcore = minecraft.level != null && minecraft.level.getLevelData().isHardcore();
 
@@ -216,23 +217,56 @@ public class HealthDisplayHandler implements HudRenderCallback {
                 drawShadowedText(guiGraphics, minecraft, mountHealth + "/" + mountMaxHealth, mountPosX, mountPosY, mountColor);
             }
         }
-
-        minecraft.getProfiler().pop();
-
         minecraft.getProfiler().pop();
 
     }
 
     private void renderIcon(GuiGraphics guiGraphics, ResourceLocation icon, int x, int y) {
+        guiGraphics.flush();
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableDepthTest();
+
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(0.0D, 0.0D, 1000.0D);
+
         RenderSystem.setShaderTexture(0, icon);
         guiGraphics.blit(icon, x, y, 0, 0, 16, 16, 16, 16);
+
+        guiGraphics.pose().popPose();
+
+        guiGraphics.flush();
+        RenderSystem.enableDepthTest();
     }
 
     private void drawShadowedText(GuiGraphics guiGraphics, Minecraft minecraft, String text, int x, int y, int color) {
+        guiGraphics.flush();
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableDepthTest();
+
         guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate(0.0D, 0.0D, 200.0D);
-        guiGraphics.drawString(minecraft.font, text, x, y, color, true);
+        guiGraphics.pose().translate(0.0D, 0.0D, 1000.0D);
+
+        minecraft.font.drawInBatch(
+                text,
+                x,
+                y,
+                color,
+                true,
+                guiGraphics.pose().last().pose(),
+                guiGraphics.bufferSource(),
+                Font.DisplayMode.SEE_THROUGH,
+                0,
+                15728880
+        );
+
         guiGraphics.pose().popPose();
+        guiGraphics.flush();
+
+        RenderSystem.enableDepthTest();
     }
 
     private int interpolateColor(float ratio, int colorStart, int colorEnd) {
@@ -314,5 +348,10 @@ public class HealthDisplayHandler implements HudRenderCallback {
         }
 
         return !ConfigManager.mountHealthMobBlacklist().contains(id.toString());
+    }
+
+    @Override
+    public void onHudRender(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+
     }
 }
