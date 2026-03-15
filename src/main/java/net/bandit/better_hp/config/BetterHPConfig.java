@@ -204,6 +204,14 @@ public class BetterHPConfig {
             .comment("Only apply the selected item name offset when the player has armor > 0.")
             .define("moveSelectedItemNameOnlyWhenArmor", true);
 
+    public static final ModConfigSpec.DoubleValue hudIconScale = CLIENT_BUILDER
+            .comment("Scale of BetterHP HUD icons. 1.0 = normal size")
+            .defineInRange("hudIconScale", 1.0, 0.5, 4.0);
+
+    public static final ModConfigSpec.DoubleValue hudTextScale = CLIENT_BUILDER
+            .comment("Scale of BetterHP HUD text. 1.0 = normal size")
+            .defineInRange("hudTextScale", 1.0, 0.5, 4.0);
+
 
     public static final ModConfigSpec CLIENT_SPEC = CLIENT_BUILDER.build();
 
@@ -220,6 +228,8 @@ public class BetterHPConfig {
     public static int mountX, mountY;
     public static int selectedItemNameYOff;
     public static boolean selectedItemNameOnlyWhenArmor;
+    public static float iconScale;
+    public static float textScale;
 
 
     @SubscribeEvent
@@ -248,6 +258,8 @@ public class BetterHPConfig {
         manaEnabled = showMana.get();
         selectedItemNameYOff = selectedItemNameOffsetY.get();
         selectedItemNameOnlyWhenArmor = moveSelectedItemNameOnlyWhenArmor.get();
+        iconScale = hudIconScale.get().floatValue();
+        textScale = hudTextScale.get().floatValue();
 
 
     }

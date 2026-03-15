@@ -116,6 +116,12 @@ public class HealthDisplayHandler {
         GuiGraphics guiGraphics = event.getGuiGraphics();
         renderCustomHud(guiGraphics, player);
     }
+    private static int getScaledTextWidth(Font font, String text, float scale) {
+        return Math.round(font.width(text) * scale);
+    }
+    private static int getScaledIconSize(int baseSize, float scale) {
+        return Math.max(1, Math.round(baseSize * scale));
+    }
 
     private static void renderCustomHud(GuiGraphics guiGraphics, Player player) {
         int screenWidth  = Minecraft.getInstance().getWindow().getGuiScaledWidth();
@@ -145,6 +151,8 @@ public class HealthDisplayHandler {
         // Player stats
         float health       = player.getHealth();
         float maxHealth    = player.getMaxHealth();
+        float iconScale = BetterHPConfig.iconScale;
+        float textScale = BetterHPConfig.textScale;
         int absorption     = (int) player.getAbsorptionAmount();
         int armorValue     = player.getArmorValue();
         var toughAttr      = player.getAttribute(Attributes.ARMOR_TOUGHNESS);
@@ -165,11 +173,11 @@ public class HealthDisplayHandler {
         int healthUsed = drawHealth(
                 guiGraphics, player, health, maxHealth, healthTextColor,
                 screenWidth, screenHeight, healthX, healthY,
-                showHealthIcon, showNumericHealth
+                showHealthIcon, showNumericHealth, iconScale, textScale
         );
 
-        drawArmor(guiGraphics, armorValue, screenWidth, screenHeight, armorX, armorY, showArmorIcon);
-        drawToughness(guiGraphics, toughnessValue, screenWidth, screenHeight, toughnessX, toughnessY, showToughnessIcon);
+        drawArmor(guiGraphics, armorValue, screenWidth, screenHeight, armorX, armorY, showArmorIcon, iconScale, textScale);
+        drawToughness(guiGraphics, toughnessValue, screenWidth, screenHeight, toughnessX, toughnessY, showToughnessIcon, iconScale, textScale);
 
         boolean customHungerActive = (BetterHPConfig.showHungerIcon.get() || showNumericHunger);
         boolean showSaturationTxt  = BetterHPConfig.showSaturationText.get();
@@ -177,22 +185,22 @@ public class HealthDisplayHandler {
 
         if (!vanillaHungerOn && customHungerActive) {
             drawHunger(guiGraphics, hunger, screenWidth, screenHeight, hungerX, hungerY,
-                    BetterHPConfig.showHungerIcon.get(), showNumericHunger);
+                    BetterHPConfig.showHungerIcon.get(), showNumericHunger, iconScale, textScale);
 
             if (showSaturationTxt && saturation > 0) {
-                drawSaturation(guiGraphics, saturation, screenWidth, screenHeight, hungerX, hungerY);
+                drawSaturation(guiGraphics, saturation, screenWidth, screenHeight, hungerX, hungerY, textScale);
             }
         } else {
             if (!(hideSatWithVanilla && vanillaHungerOn)) {
                 if (showSaturationTxt && saturation > 0) {
-                    drawSaturation(guiGraphics, saturation, screenWidth, screenHeight, hungerX, hungerY);
+                    drawSaturation(guiGraphics, saturation, screenWidth, screenHeight, hungerX, hungerY, textScale);
                 }
             }
         }
 
-        drawOxygen(guiGraphics, air, maxAir, screenWidth, screenHeight, oxygenX, oxygenY, showBreatheIcon, showNumericOxygen);
+        drawOxygen(guiGraphics, air, maxAir, screenWidth, screenHeight, oxygenX, oxygenY, showBreatheIcon, showNumericOxygen, iconScale, textScale);
 
-        // --- Iron's mana (optional) ---
+        // --- Iron's mana---
         if (BetterHPConfig.enableIronsManaCompat.get() && BetterHPConfig.showMana.get()) {
             var mana = IronsSpellbooksCompat.getMana(player);
             if (mana != null) {
@@ -205,7 +213,8 @@ public class HealthDisplayHandler {
 
                 drawMana(guiGraphics, mana.mana(), mana.maxMana(),
                         screenWidth, screenHeight, manaX, manaY,
-                        BetterHPConfig.showManaIcon.get(), BetterHPConfig.showNumericMana.get());
+                        BetterHPConfig.showManaIcon.get(), BetterHPConfig.showNumericMana.get(),
+                        iconScale, textScale);
             }
         }
 
@@ -219,7 +228,7 @@ public class HealthDisplayHandler {
             int ax = baseX + follow + BetterHPConfig.absorptionOffsetX.get();
             int ay = baseY + BetterHPConfig.absorptionOffsetY.get();
 
-            drawAbsorption(guiGraphics, absorption, ax, ay);
+            drawAbsorption(guiGraphics, absorption, ax, ay, textScale);
     }
 
         LivingEntity mount = getMountWithHealth(player);
@@ -230,33 +239,35 @@ public class HealthDisplayHandler {
             int mountX = (screenWidth / 2) + BetterHPConfig.mountDisplayX.get();
             int mountY = screenHeight - BetterHPConfig.mountDisplayY.get();
 
-            drawIcon(guiGraphics, MOUNT_ICON, mountX - 24, mountY - 4, 16, 16);
-            guiGraphics.drawString(Minecraft.getInstance().font, mountHealth + "/" + mountMaxHealth, mountX, mountY, 0xAA77FF);
+            drawIcon(guiGraphics, MOUNT_ICON, mountX - 24, mountY - 4, 16, 16, iconScale);
+            drawShadowedText(guiGraphics, Minecraft.getInstance().font, mountHealth + "/" + mountMaxHealth, mountX, mountY, 0xAA77FF, textScale);
         }
     }
     private static void drawMana(GuiGraphics guiGraphics, int mana, int maxMana,
                                  int screenWidth, int screenHeight,
-                                 int x, int y, boolean showIcon, boolean showNumeric) {
+                                 int x, int y, boolean showIcon, boolean showNumeric,
+                                 float iconScale, float textScale) {
 
         Minecraft mc = Minecraft.getInstance();
         Font font = mc.font;
 
         String manaText = mana + "/" + maxMana;
-        int textWidth = font.width(manaText);
+        int textWidth = getScaledTextWidth(font, manaText, textScale);
 
         int color = 0x2F7DFF;
 
         if (showNumeric) {
-            drawShadowedText(guiGraphics, font, manaText, (screenWidth / 2) + x, screenHeight - y, color);
+            drawShadowedText(guiGraphics, font, manaText, (screenWidth / 2) + x, screenHeight - y, color, textScale);
         }
         if (showIcon) {
-            drawIcon(guiGraphics, MANA_ICON, (screenWidth / 2) + x + textWidth, screenHeight - y - 4, 16, 16);
+            drawIcon(guiGraphics, MANA_ICON, (screenWidth / 2) + x + textWidth, screenHeight - y - 4, 16, 16, iconScale);
         }
     }
 
     private static int drawHealth(GuiGraphics g, Player player, float health, float maxHealth,
                                   int textColor, int sw, int sh, int x, int y,
-                                  boolean showIcon, boolean showNumeric) {
+                                  boolean showIcon, boolean showNumeric,
+                                  float iconScale, float textScale) {
         Font font = Minecraft.getInstance().font;
         int used = 0;
 
@@ -266,25 +277,27 @@ public class HealthDisplayHandler {
                         : HEALTH_ICON;
 
         if (showIcon) {
-            drawIcon(g, healthIcon, (sw / 2) + x - 24, sh - y - 4, 16, 16);
-            used += 16;
+            drawIcon(g, healthIcon, (sw / 2) + x - 24, sh - y - 4, 16, 16, iconScale);
+            used += getScaledIconSize(16, iconScale);
             if (showNumeric) used += 4;
         }
 
         if (showNumeric) {
             int shakeOffset = 0;
             if (maxHealth > 0 && (health / maxHealth) < 0.2f) {
-                shakeOffset = (int)(Math.sin(player.tickCount * 0.6f) * 2);
+                shakeOffset = (int) (Math.sin(player.tickCount * 0.6f) * 2);
             }
+
             String hpText = String.format("%d/%d", (int) health, (int) maxHealth);
-            g.drawString(font, hpText, (sw / 2) + x + shakeOffset, sh - y, textColor);
-            used += font.width(hpText);
+            drawShadowedText(g, font, hpText, (sw / 2) + x + shakeOffset, sh - y, textColor, textScale);
+            used += getScaledTextWidth(font, hpText, textScale);
         }
 
         return used;
     }
 
-    private static void drawArmor(GuiGraphics guiGraphics, int armorValue, int screenWidth, int screenHeight, int x, int y, boolean showIcon) {
+    private static void drawArmor(GuiGraphics guiGraphics, int armorValue, int screenWidth, int screenHeight,
+                                  int x, int y, boolean showIcon, float iconScale, float textScale) {
         if (showIcon && armorValue > 0) {
             float scale = 1.0f;
             if (armorBounceTicks > 0) {
@@ -292,7 +305,9 @@ public class HealthDisplayHandler {
                 armorBounceTicks--;
             }
 
-            float pulse = (armorValue == 20) ? (0.9f + 0.1f * (float) Math.sin(Minecraft.getInstance().player.tickCount * 0.2f)) : 1.0f;
+            float pulse = (armorValue == 20)
+                    ? (0.9f + 0.1f * (float) Math.sin(Minecraft.getInstance().player.tickCount * 0.2f))
+                    : 1.0f;
 
             int iconX = (screenWidth / 2) + x - 10;
             int iconY = screenHeight - y + 2;
@@ -303,15 +318,17 @@ public class HealthDisplayHandler {
             guiGraphics.pose().translate(-iconX, -iconY, 0);
             guiGraphics.setColor(pulse, pulse, pulse, 1.0f);
 
-            drawIcon(guiGraphics, ARMOR_ICON, iconX - 14, iconY - 6, 16, 16);
+            drawIcon(guiGraphics, ARMOR_ICON, iconX - 14, iconY - 6, 16, 16, iconScale);
             guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-            drawShadowedText(guiGraphics, Minecraft.getInstance().font, String.valueOf(armorValue), (screenWidth / 2) + x, screenHeight - y, 0xAAAAAA);
+            drawShadowedText(guiGraphics, Minecraft.getInstance().font, String.valueOf(armorValue),
+                    (screenWidth / 2) + x, screenHeight - y, 0xAAAAAA, textScale);
 
             guiGraphics.pose().popPose();
         }
     }
 
-    private static void drawToughness(GuiGraphics guiGraphics, int toughnessValue, int screenWidth, int screenHeight, int x, int y, boolean showIcon) {
+    private static void drawToughness(GuiGraphics guiGraphics, int toughnessValue, int screenWidth, int screenHeight,
+                                      int x, int y, boolean showIcon, float iconScale, float textScale) {
         if (showIcon && toughnessValue > 0) {
             float scale = 1.0f;
             if (toughnessBounceTicks > 0) {
@@ -319,7 +336,9 @@ public class HealthDisplayHandler {
                 toughnessBounceTicks--;
             }
 
-            float pulse = (toughnessValue >= 5) ? (0.9f + 0.1f * (float) Math.sin(Minecraft.getInstance().player.tickCount * 0.2f)) : 1.0f;
+            float pulse = (toughnessValue >= 5)
+                    ? (0.9f + 0.1f * (float) Math.sin(Minecraft.getInstance().player.tickCount * 0.2f))
+                    : 1.0f;
 
             int iconX = (screenWidth / 2) + x - 10;
             int iconY = screenHeight - y + 2;
@@ -330,53 +349,56 @@ public class HealthDisplayHandler {
             guiGraphics.pose().translate(-iconX, -iconY, 0);
             guiGraphics.setColor(pulse, pulse, pulse, 1.0f);
 
-            drawIcon(guiGraphics, TOUGHNESS_ICON, iconX - 14, iconY - 6, 16, 16);
+            drawIcon(guiGraphics, TOUGHNESS_ICON, iconX - 14, iconY - 6, 16, 16, iconScale);
             guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-            drawShadowedText(guiGraphics, Minecraft.getInstance().font, String.valueOf(toughnessValue), (screenWidth / 2) + x, screenHeight - y, 0xADD8E6);
+            drawShadowedText(guiGraphics, Minecraft.getInstance().font, String.valueOf(toughnessValue),
+                    (screenWidth / 2) + x, screenHeight - y, 0xADD8E6, textScale);
 
             guiGraphics.pose().popPose();
         }
     }
-
-    private static void drawHunger(GuiGraphics guiGraphics, int hunger, int screenWidth, int screenHeight, int x, int y, boolean showIcon, boolean showNumeric) {
+    private static void drawHunger(GuiGraphics guiGraphics, int hunger, int screenWidth, int screenHeight,
+                                   int x, int y, boolean showIcon, boolean showNumeric,
+                                   float iconScale, float textScale) {
         Minecraft mc = Minecraft.getInstance();
         Font font = mc.font;
 
         String hungerText = hunger + "/20";
-        int textWidth = font.width(hungerText);
+        int textWidth = getScaledTextWidth(font, hungerText, textScale);
 
         if (showNumeric) {
-            drawShadowedText(guiGraphics, font, hungerText, (screenWidth / 2) + x, screenHeight - y, 0xFF7518);
+            drawShadowedText(guiGraphics, font, hungerText, (screenWidth / 2) + x, screenHeight - y, 0xFF7518, textScale);
         }
         if (showIcon) {
-
-            drawIcon(guiGraphics, HUNGER_ICON, (screenWidth / 2) + x + textWidth , screenHeight - y - 4, 16, 16);
+            drawIcon(guiGraphics, HUNGER_ICON, (screenWidth / 2) + x + textWidth, screenHeight - y - 4, 16, 16, iconScale);
         }
     }
 
-    private static void drawOxygen(GuiGraphics guiGraphics, int air, int maxAir, int screenWidth, int screenHeight, int x, int y, boolean showIcon, boolean showNumeric) {
+    private static void drawOxygen(GuiGraphics guiGraphics, int air, int maxAir, int screenWidth, int screenHeight,
+                                   int x, int y, boolean showIcon, boolean showNumeric,
+                                   float iconScale, float textScale) {
         if (showNumeric && air < maxAir) {
-            drawShadowedText(guiGraphics, Minecraft.getInstance().font, (air / 20) + "/" + (maxAir / 20), (screenWidth / 2) + x - 10, screenHeight - y, 0x00BFFF);
+            drawShadowedText(guiGraphics, Minecraft.getInstance().font,
+                    (air / 20) + "/" + (maxAir / 20),
+                    (screenWidth / 2) + x - 10, screenHeight - y, 0x00BFFF, textScale);
         }
         if (showIcon && air < maxAir) {
-            drawIcon(guiGraphics, BREATHE_ICON, (screenWidth / 2) + x + 18, screenHeight - y - 4, 16, 16);
+            drawIcon(guiGraphics, BREATHE_ICON, (screenWidth / 2) + x + 18, screenHeight - y - 4, 16, 16, iconScale);
         }
     }
-
-    private static void drawAbsorption(GuiGraphics g, int absorption, int absX, int absY) {
+    private static void drawAbsorption(GuiGraphics g, int absorption, int absX, int absY, float textScale) {
         if (absorption > 0) {
-            drawShadowedText(g, Minecraft.getInstance().font, "+" + absorption, absX, absY, 0xFFFF00);
+            drawShadowedText(g, Minecraft.getInstance().font, "+" + absorption, absX, absY, 0xFFFF00, textScale);
         }
     }
-
-
-    private static void drawSaturation(GuiGraphics guiGraphics, int saturation, int screenWidth, int screenHeight, int x, int y) {
+    private static void drawSaturation(GuiGraphics guiGraphics, int saturation, int screenWidth, int screenHeight,
+                                       int x, int y, float textScale) {
         if (saturation > 0) {
-            drawShadowedText(guiGraphics, Minecraft.getInstance().font, "+" + saturation, (screenWidth / 2) + x + 46, screenHeight - y, 0xFFD700);
+            drawShadowedText(guiGraphics, Minecraft.getInstance().font,
+                    "+" + saturation,
+                    (screenWidth / 2) + x + 46, screenHeight - y, 0xFFD700, textScale);
         }
     }
-
-
 
     private static int getDynamicHealthColor(Player player) {
         float health = player.getHealth();
@@ -413,14 +435,31 @@ public class HealthDisplayHandler {
         return (r << 16) | (g << 8) | b;
     }
 
-    private static void drawIcon(GuiGraphics guiGraphics, ResourceLocation icon, int x, int y, int width, int height) {
+    private static void drawIcon(GuiGraphics guiGraphics, ResourceLocation icon, int x, int y, int width, int height, float scale) {
+        float scaledWidth = width * scale;
+        float scaledHeight = height * scale;
+
+        float offsetX = (scaledWidth - width) / 2.0f;
+        float offsetY = (scaledHeight - height) / 2.0f;
+
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(x - offsetX, y - offsetY, 0);
+        guiGraphics.pose().scale(scale, scale, 1.0f);
+
         RenderSystem.setShaderTexture(0, icon);
-        guiGraphics.blit(icon, x, y, 0, 0, width, height, width, height);
+        guiGraphics.blit(icon, 0, 0, 0, 0, width, height, width, height);
+
+        guiGraphics.pose().popPose();
     }
 
-    private static void drawShadowedText(GuiGraphics guiGraphics, Font font, String text, int x, int y, int color) {
-        guiGraphics.drawString(font, text, x, y, color, true);
+    private static void drawShadowedText(GuiGraphics guiGraphics, Font font, String text, int x, int y, int color, float scale) {
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(x, y, 0);
+        guiGraphics.pose().scale(scale, scale, 1.0f);
+        guiGraphics.drawString(font, text, 0, 0, color, true);
+        guiGraphics.pose().popPose();
     }
+
     @Nullable
     private static LivingEntity getMountWithHealth(Player player) {
         if (player != null) {
