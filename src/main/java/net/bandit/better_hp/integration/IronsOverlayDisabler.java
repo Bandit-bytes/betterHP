@@ -14,17 +14,22 @@ public final class IronsOverlayDisabler {
     @SubscribeEvent
     public static void onRenderLayerPre(RenderGuiLayerEvent.Pre event) {
         if (!IronsSpellbooksCompat.isLoaded()) return;
-        if (!BetterHPConfig.enableIronsManaCompat.get()) return;
+
         if (!BetterHPConfig.hideIronsManaOverlay.get()) return;
 
         ResourceLocation id = event.getName();
 
-        // Cancel Iron's mana layer(s)
-        if ("irons_spellbooks".equals(id.getNamespace())) {
-            String path = id.getPath();
-            if (path.contains("mana")) {
-                event.setCanceled(true);
-            }
+        if (!"irons_spellbooks".equals(id.getNamespace())) return;
+
+        String path = id.getPath().toLowerCase();
+
+        if (path.contains("mana")) {
+            event.setCanceled(true);
+            return;
+        }
+
+        if (path.contains("magic") || path.contains("spell") || path.contains("hud")) {
+            event.setCanceled(true);
         }
     }
 

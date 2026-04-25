@@ -202,7 +202,10 @@ public class HealthDisplayHandler {
 
         // --- Iron's mana---
         if (BetterHPConfig.enableIronsManaCompat.get() && BetterHPConfig.showMana.get()) {
-            var mana = IronsSpellbooksCompat.getMana(player);
+            var mana = IronsSpellbooksCompat.getMana(
+                    player,
+                    BetterHPConfig.enableIronsManaCompat.get() && BetterHPConfig.showMana.get()
+            );
             if (mana != null) {
                 int baseX = healthX;
                 int baseY = healthY + BetterHPConfig.manaOffsetY.get();
