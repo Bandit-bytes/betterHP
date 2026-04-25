@@ -17,9 +17,12 @@ public final class IronsSpellbooksCompat {
     private static boolean initialized = false;
     private static boolean warnedOnce = false;
     private static boolean debugLoggedOnce = false;
+
     private static Holder<?> maxManaHolder;
+
     private static Method mGetPlayerMagicData;
     private static Method mMagicGetMana;
+
     private static Method mClientGetMana_Living;
     private static Method mClientGetMana_NoArgs;
     private static Method mClientGetMana_Player;
@@ -40,24 +43,54 @@ public final class IronsSpellbooksCompat {
             ensureReflectionReady();
             BetterhpMod.getLogger().info("Better HP: Iron's mana compat ready.");
         } catch (Throwable t) {
-            BetterhpMod.getLogger().warn("Better HP: Iron's detected but mana API could not be resolved. Mana HUD will be hidden.", t);
+            BetterhpMod.getLogger().warn(
+                    "Better HP: Iron's detected but mana API could not be resolved. Mana HUD will be hidden.",
+                    t
+            );
         }
     }
 
+    /**
+     * Use this from your renderer.
+     *
+     * Pass your Better HP config value into shouldRenderManaHud.
+     *
+     * Example:
+     * IronsSpellbooksCompat.getMana(player, BetterHpClientConfig.showIronsManaBar())
+     */
+    @Nullable
+    public static ManaSnapshot getMana(@Nullable Player player, boolean shouldRenderManaHud) {
+        if (!shouldRenderManaHud) return null;
+        return getManaInternal(player);
+    }
+
+    /**
+     * Fails closed on purpose.
+     *
+     * This prevents old calls from accidentally drawing the mana bar without checking config.
+     * Update your render class to call getMana(player, yourConfigBoolean).
+     */
     @Nullable
     public static ManaSnapshot getMana(@Nullable Player player) {
+        return null;
+    }
+
+    @Nullable
+    private static ManaSnapshot getManaInternal(@Nullable Player player) {
         if (player == null || !isLoaded()) return null;
 
         try {
             ensureReflectionReady();
 
             float maxMana = (float) player.getAttributeValue((Holder) maxManaHolder);
-            if (maxMana <= 0.0f) return null;
+            if (maxMana <= 0.0F) return null;
 
             float mana = readClientManaPreferred(player);
-            if (mana < 0) return null;
+            if (mana < 0.0F) return null;
 
-            if (mana > maxMana) mana = maxMana;
+            if (mana > maxMana) {
+                mana = maxMana;
+            }
 
             return new ManaSnapshot(Math.round(mana), Math.round(maxMana));
         } catch (Throwable t) {
@@ -77,56 +110,72 @@ public final class IronsSpellbooksCompat {
         if (mClientGetMana_NoArgs != null) {
             Object v = mClientGetMana_NoArgs.invoke(null);
             float mana = asFloat(v);
-            if (logDebugOnce("client no-args", mana)) {}
-            if (mana >= 0) return mana;
+            logDebugOnce("client no-args", mana);
+
+            if (mana >= 0.0F) {
+                return mana;
+            }
         }
 
         if (mClientGetMana_Living != null) {
             Object v = mClientGetMana_Living.invoke(null, (LivingEntity) player);
             float mana = asFloat(v);
-            if (logDebugOnce("client living", mana)) {}
-            if (mana >= 0) return mana;
+            logDebugOnce("client living", mana);
+
+            if (mana >= 0.0F) {
+                return mana;
+            }
         }
 
         if (mClientGetMana_Player != null) {
             Object v = mClientGetMana_Player.invoke(null, player);
             float mana = asFloat(v);
-            if (logDebugOnce("client player", mana)) {}
-            if (mana >= 0) return mana;
+            logDebugOnce("client player", mana);
+
+            if (mana >= 0.0F) {
+                return mana;
+            }
         }
 
         Object magicData = mGetPlayerMagicData.invoke(null, (LivingEntity) player);
-        if (magicData == null) return -1;
+        if (magicData == null) return -1.0F;
 
         Object v = mMagicGetMana.invoke(magicData);
         float mana = asFloat(v);
-        if (logDebugOnce("magic attachment", mana)) {}
+        logDebugOnce("magic attachment", mana);
+
         return mana;
     }
 
     private static float asFloat(Object v) {
-        if (v == null) return -1;
+        if (v == null) return -1.0F;
         if (v instanceof Number n) return n.floatValue();
-        return -1;
+        return -1.0F;
     }
 
-    private static boolean logDebugOnce(String source, float mana) {
-        if (debugLoggedOnce) return false;
+    private static void logDebugOnce(String source, float mana) {
+        if (debugLoggedOnce) return;
+
         debugLoggedOnce = true;
         BetterhpMod.getLogger().info("Better HP: Iron's mana source='{}' value={}", source, mana);
-        return true;
     }
 
     private static void ensureReflectionReady() throws Exception {
-        if (mGetPlayerMagicData != null && mMagicGetMana != null && maxManaHolder != null) return;
+        if (mGetPlayerMagicData != null && mMagicGetMana != null && maxManaHolder != null) {
+            return;
+        }
 
         Class<?> cAttrReg = Class.forName("io.redspace.ironsspellbooks.api.registry.AttributeRegistry");
         Field fMaxMana = cAttrReg.getField("MAX_MANA");
+
         Object holderObj = fMaxMana.get(null);
         if (!(holderObj instanceof Holder<?> h)) {
-            throw new IllegalStateException("AttributeRegistry.MAX_MANA was not a Holder. Got: " +
-                    (holderObj == null ? "null" : holderObj.getClass().getName()));
+            throw new IllegalStateException(
+                    "AttributeRegistry.MAX_MANA was not a Holder. Got: " +
+                            (holderObj == null ? "null" : holderObj.getClass().getName())
+            );
         }
+
         maxManaHolder = h;
 
         Class<?> cMagicData = Class.forName("io.redspace.ironsspellbooks.api.magic.MagicData");
@@ -149,13 +198,19 @@ public final class IronsSpellbooksCompat {
                 Class<?> c = Class.forName(cn);
 
                 mClientGetMana_NoArgs = tryMethod(c, "getMana");
-                if (mClientGetMana_NoArgs == null) mClientGetMana_NoArgs = tryMethod(c, "getPlayerMana");
+                if (mClientGetMana_NoArgs == null) {
+                    mClientGetMana_NoArgs = tryMethod(c, "getPlayerMana");
+                }
 
                 mClientGetMana_Living = tryMethod(c, "getMana", LivingEntity.class);
-                if (mClientGetMana_Living == null) mClientGetMana_Living = tryMethod(c, "getPlayerMana", LivingEntity.class);
+                if (mClientGetMana_Living == null) {
+                    mClientGetMana_Living = tryMethod(c, "getPlayerMana", LivingEntity.class);
+                }
 
                 mClientGetMana_Player = tryMethod(c, "getMana", Player.class);
-                if (mClientGetMana_Player == null) mClientGetMana_Player = tryMethod(c, "getPlayerMana", Player.class);
+                if (mClientGetMana_Player == null) {
+                    mClientGetMana_Player = tryMethod(c, "getPlayerMana", Player.class);
+                }
 
                 if (mClientGetMana_NoArgs != null || mClientGetMana_Living != null || mClientGetMana_Player != null) {
                     BetterhpMod.getLogger().info("Better HP: Found Iron's client mana accessor in {}", cn);
@@ -164,7 +219,10 @@ public final class IronsSpellbooksCompat {
             } catch (Throwable ignored) {
             }
         }
-        BetterhpMod.getLogger().info("Better HP: No Iron's client mana accessor found; using MagicData attachment (may be 0 client-side).");
+
+        BetterhpMod.getLogger().info(
+                "Better HP: No Iron's client mana accessor found; using MagicData attachment."
+        );
     }
 
     @Nullable
@@ -172,8 +230,13 @@ public final class IronsSpellbooksCompat {
         try {
             Method m = c.getMethod(name, args);
             Class<?> rt = m.getReturnType();
-            if (Number.class.isAssignableFrom(rt) || rt.isPrimitive()) return m;
-        } catch (Throwable ignored) {}
+
+            if (Number.class.isAssignableFrom(rt) || rt.isPrimitive()) {
+                return m;
+            }
+        } catch (Throwable ignored) {
+        }
+
         return null;
     }
 
