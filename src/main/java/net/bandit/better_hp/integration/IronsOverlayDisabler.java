@@ -4,6 +4,7 @@ import net.bandit.better_hp.BetterhpMod;
 import net.bandit.better_hp.config.BetterHPConfig;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
@@ -11,11 +12,11 @@ import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 @EventBusSubscriber(modid = BetterhpMod.MOD_ID, value = Dist.CLIENT)
 public final class IronsOverlayDisabler {
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onRenderLayerPre(RenderGuiLayerEvent.Pre event) {
         if (!IronsSpellbooksCompat.isLoaded()) return;
-
         if (!BetterHPConfig.hideIronsManaOverlay.get()) return;
+        IronsSpellbooksCompat.forceDisableIronsManaBarConfig();
 
         ResourceLocation id = event.getName();
 
@@ -23,12 +24,11 @@ public final class IronsOverlayDisabler {
 
         String path = id.getPath().toLowerCase();
 
-        if (path.contains("mana")) {
-            event.setCanceled(true);
-            return;
-        }
-
-        if (path.contains("magic") || path.contains("spell") || path.contains("hud")) {
+        if (path.contains("mana")
+                || path.contains("magic")
+                || path.contains("hud")
+                || path.contains("overlay")
+                || path.contains("bar")) {
             event.setCanceled(true);
         }
     }

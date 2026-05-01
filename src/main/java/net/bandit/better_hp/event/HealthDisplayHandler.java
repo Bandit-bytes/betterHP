@@ -206,6 +206,7 @@ public class HealthDisplayHandler {
                     player,
                     BetterHPConfig.enableIronsManaCompat.get() && BetterHPConfig.showMana.get()
             );
+
             if (mana != null) {
                 int baseX = healthX;
                 int baseY = healthY + BetterHPConfig.manaOffsetY.get();

@@ -225,6 +225,35 @@ public final class IronsSpellbooksCompat {
         );
     }
 
+    public static void forceDisableIronsManaBarConfig() {
+        if (!isLoaded()) return;
+
+        try {
+            Class<?> cClientConfigs = Class.forName("io.redspace.ironsspellbooks.config.ClientConfigs");
+            Class<?> cManaDisplay = Class.forName("io.redspace.ironsspellbooks.gui.overlays.ManaBarOverlay$Display");
+
+            Object neverValue = Enum.valueOf((Class<Enum>) cManaDisplay.asSubclass(Enum.class), "Never");
+
+            Field fManaBarDisplay = cClientConfigs.getField("MANA_BAR_DISPLAY");
+            Object configValue = fManaBarDisplay.get(null);
+
+            Method setMethod = configValue.getClass().getMethod("set", Object.class);
+            Method getMethod = configValue.getClass().getMethod("get");
+
+            Object currentValue = getMethod.invoke(configValue);
+
+            if (currentValue != neverValue) {
+                setMethod.invoke(configValue, neverValue);
+                BetterhpMod.getLogger().info("Better HP: Forced Iron's mana bar display to Never.");
+            }
+        } catch (Throwable t) {
+            if (!warnedOnce) {
+                warnedOnce = true;
+                BetterhpMod.getLogger().warn("Better HP: Failed to force-disable Iron's mana bar config.", t);
+            }
+        }
+    }
+
     @Nullable
     private static Method tryMethod(Class<?> c, String name, Class<?>... args) {
         try {
