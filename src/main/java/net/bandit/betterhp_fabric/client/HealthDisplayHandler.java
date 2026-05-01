@@ -1,13 +1,12 @@
 package net.bandit.betterhp_fabric.client;
 
 import net.bandit.betterhp_fabric.config.ConfigManager;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
-
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -16,10 +15,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
-import net.minecraft.client.renderer.RenderPipelines;
-import com.mojang.blaze3d.systems.RenderSystem;
 
-public class HealthDisplayHandler implements HudRenderCallback {
+public class HealthDisplayHandler {
 
     private static final Identifier HEALTH_ICON =
             Identifier.fromNamespaceAndPath("betterhp_fabric", "textures/gui/health_icon.png");
@@ -43,8 +40,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
     private int lastRenderedArmorValue = 0;
     private int lastRenderedToughness = 0;
 
-    @Override
-    public void onHudRender(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    public void extract(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
 
@@ -56,11 +52,11 @@ public class HealthDisplayHandler implements HudRenderCallback {
                 || minecraft.gameMode.getPlayerMode() == GameType.SPECTATOR) {
             return;
         }
+
         guiGraphics.nextStratum();
 
         boolean isHardcore = minecraft.level != null && minecraft.level.getLevelData().isHardcore();
 
-        // Stats
         int health = Mth.ceil(player.getHealth());
         int maxHealth = Mth.ceil(player.getMaxHealth());
         int absorption = Mth.ceil(player.getAbsorptionAmount());
@@ -72,7 +68,6 @@ public class HealthDisplayHandler implements HudRenderCallback {
 
         int healthColor = determineHealthColor(player);
         int hungerColor = determineHungerColor(hunger, 20);
-        int breatheColor = 0x00BFFF;
 
         int screenWidth = guiGraphics.guiWidth();
         int screenHeight = guiGraphics.guiHeight();
@@ -92,10 +87,8 @@ public class HealthDisplayHandler implements HudRenderCallback {
         int saturationPosX = screenWidth / 2 + ConfigManager.saturationDisplayX();
         int saturationPosY = screenHeight - ConfigManager.saturationDisplayY();
 
-        // 1.21.10 (Mojang mappings): Profiler.get() -> ProfilerFiller
         ProfilerFiller profiler = Profiler.get();
 
-        // --- Health ---
         profiler.push("betterhp_healthIcon");
         try {
             if (ConfigManager.showHealthIcon()) {
@@ -120,7 +113,6 @@ public class HealthDisplayHandler implements HudRenderCallback {
             profiler.pop();
         }
 
-        // --- Hunger ---
         profiler.push("betterhp_hungerIcon");
         try {
             if (ConfigManager.showHungerIcon()) {
@@ -153,7 +145,6 @@ public class HealthDisplayHandler implements HudRenderCallback {
             profiler.pop();
         }
 
-        // --- Saturation ---
         profiler.push("betterhp_saturationText");
         try {
             if (ConfigManager.showSaturation() && saturation > 0) {
@@ -164,7 +155,6 @@ public class HealthDisplayHandler implements HudRenderCallback {
             profiler.pop();
         }
 
-        // --- Armor & Toughness ---
         profiler.push("betterhp_armorIcon");
         try {
             int toughness = 0;
@@ -179,7 +169,6 @@ public class HealthDisplayHandler implements HudRenderCallback {
             if (toughness != lastRenderedToughness) toughnessBounceTicks = 10;
             lastRenderedToughness = toughness;
 
-            // Armor
             if (ConfigManager.showArmorIcon() && armorValue > 0) {
                 float scale = 1.0f;
                 if (armorBounceTicks > 0) {
@@ -187,26 +176,18 @@ public class HealthDisplayHandler implements HudRenderCallback {
                     armorBounceTicks--;
                 }
 
-                float pulse = (armorValue == 20)
-                        ? (0.9f + 0.1f * (float) Math.sin(player.tickCount * 0.2f))
-                        : 1.0f;
-
                 guiGraphics.pose().pushMatrix();
                 guiGraphics.pose().translate(armorPosX - 10, armorPosY + 2);
                 guiGraphics.pose().scale(scale, scale);
                 guiGraphics.pose().translate(-(armorPosX - 10), -(armorPosY + 2));
 
-//                guiGraphics.setColor(pulse, pulse, pulse, 1.0f);
                 renderIcon(guiGraphics, ARMOR_ICON, armorPosX - 18, armorPosY - 4);
-//                guiGraphics.setColor(1f, 1f, 1f, 1f);
-
                 drawShadowedText(guiGraphics, minecraft,
                         String.valueOf(armorValue), armorPosX, armorPosY, 0xFFFFFF);
 
                 guiGraphics.pose().popMatrix();
             }
 
-            // Toughness
             if (ConfigManager.showToughnessIcon() && toughness > 0) {
                 int toughnessPosX = armorPosX + ConfigManager.toughnessDisplayX();
                 int toughnessPosY = armorPosY + ConfigManager.toughnessDisplayY();
@@ -217,19 +198,12 @@ public class HealthDisplayHandler implements HudRenderCallback {
                     toughnessBounceTicks--;
                 }
 
-                float pulse = (toughness >= 5)
-                        ? (0.9f + 0.1f * (float) Math.sin(player.tickCount * 0.2f))
-                        : 1.0f;
-
                 guiGraphics.pose().pushMatrix();
                 guiGraphics.pose().translate(toughnessPosX - 10, toughnessPosY + 2);
                 guiGraphics.pose().scale(scale, scale);
                 guiGraphics.pose().translate(-(toughnessPosX - 10), -(toughnessPosY + 2));
 
-//                guiGraphics.setColor(pulse, pulse, pulse, 1.0f);
                 renderIcon(guiGraphics, TOUGHNESS_ICON, toughnessPosX - 18, toughnessPosY - 4);
-//                guiGraphics.setColor(1f, 1f, 1f, 1f);
-
                 drawShadowedText(guiGraphics, minecraft,
                         String.valueOf(toughness), toughnessPosX, toughnessPosY, 0xADD8E6);
 
@@ -238,6 +212,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
         } finally {
             profiler.pop();
         }
+
         profiler.push("betterhp_breatheIcon");
         try {
             if (ConfigManager.showBreatheIcon() && (player.isUnderWater() || air < maxAir)) {
@@ -254,7 +229,6 @@ public class HealthDisplayHandler implements HudRenderCallback {
             profiler.pop();
         }
 
-        // --- Mount ---
         profiler.push("betterhp_mountIcon");
         try {
             if (ConfigManager.showHealthIcon()) {
@@ -278,15 +252,14 @@ public class HealthDisplayHandler implements HudRenderCallback {
         }
     }
 
-    private void renderIcon(GuiGraphics gg, Identifier icon, int x, int y) {
-        gg.blit(RenderPipelines.GUI_TEXTURED, icon, x, y, 0, 0, 16, 16, 16, 16);
+    private void renderIcon(GuiGraphicsExtractor gg, Identifier icon, int x, int y) {
+        gg.blit(RenderPipelines.GUI_TEXTURED, icon, x, y, 0, 0, 16, 16, 16, 16, 0xFFFFFFFF);
     }
 
-    private void drawShadowedText(GuiGraphics guiGraphics, Minecraft minecraft, String text, int x, int y, int rgb) {
+    private void drawShadowedText(GuiGraphicsExtractor guiGraphics, Minecraft minecraft, String text, int x, int y, int rgb) {
         int argb = 0xFF000000 | (rgb & 0x00FFFFFF);
-        guiGraphics.drawString(minecraft.font, text, x, y, argb, true);
+        guiGraphics.text(minecraft.font, text, x, y, argb, true);
     }
-
 
     private int interpolateColor(float ratio, int colorStart, int colorEnd) {
         int r1 = (colorStart >> 16) & 0xFF;
@@ -357,5 +330,4 @@ public class HealthDisplayHandler implements HudRenderCallback {
         }
         return null;
     }
-
 }
