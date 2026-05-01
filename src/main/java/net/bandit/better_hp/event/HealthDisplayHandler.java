@@ -3,7 +3,8 @@ package net.bandit.better_hp.event;
 import net.bandit.better_hp.config.BetterHPConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
@@ -117,11 +118,11 @@ public class HealthDisplayHandler {
             return;
         }
 
-        GuiGraphics guiGraphics = event.getGuiGraphics();
-        renderCustomHud(guiGraphics, player);
+        GuiGraphicsExtractor guiGraphics = event.getGuiGraphics();
+        renderCustomHud(guiGraphics, player);;
     }
 
-    private static void renderCustomHud(GuiGraphics guiGraphics, Player player) {
+    private static void renderCustomHud(GuiGraphicsExtractor guiGraphics, Player player) {
         int screenWidth  = Minecraft.getInstance().getWindow().getGuiScaledWidth();
         int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
 
@@ -218,14 +219,31 @@ public class HealthDisplayHandler {
             int mountY = screenHeight - BetterHPConfig.mountDisplayY.get();
 
             drawIcon(guiGraphics, MOUNT_ICON, mountX - 24, mountY - 4, 16, 16);
-            guiGraphics.drawString(Minecraft.getInstance().font, mountHealth + "/" + mountMaxHealth, mountX, mountY, 0xFFAA77FF);
+            guiGraphics.text(
+                    Minecraft.getInstance().font,
+                    Component.literal(mountHealth + "/" + mountMaxHealth),
+                    mountX,
+                    mountY,
+                    0xFFAA77FF,
+                    false
+            );
         }
     }
 
 
-    private static int drawHealth(GuiGraphics g, Player player, float health, float maxHealth,
-                                  int textColor, int sw, int sh, int x, int y,
-                                  boolean showIcon, boolean showNumeric) {
+    private static int drawHealth(
+            GuiGraphicsExtractor g,
+            Player player,
+            float health,
+            float maxHealth,
+            int textColor,
+            int sw,
+            int sh,
+            int x,
+            int y,
+            boolean showIcon,
+            boolean showNumeric
+    ) {
         Font font = Minecraft.getInstance().font;
         int used = 0;
 
@@ -246,14 +264,29 @@ public class HealthDisplayHandler {
                 shakeOffset = (int)(Math.sin(player.tickCount * 0.6f) * 2);
             }
             String hpText = String.format("%d/%d", (int) health, (int) maxHealth);
-            g.drawString(font, hpText, (sw / 2) + x + shakeOffset, sh - y, textColor | 0xFF000000);
+            g.text(
+                    font,
+                    Component.literal(hpText),
+                    (sw / 2) + x + shakeOffset,
+                    sh - y,
+                    textColor | 0xFF000000,
+                    false
+            );
             used += font.width(hpText);
         }
 
         return used;
     }
 
-    private static void drawArmor(GuiGraphics g, int armorValue, int sw, int sh, int x, int y, boolean showIcon) {
+    private static void drawArmor(
+            GuiGraphicsExtractor g,
+            int armorValue,
+            int sw,
+            int sh,
+            int x,
+            int y,
+            boolean showIcon
+    ) {
         if (!showIcon || armorValue <= 0) return;
 
         float scale = 1.0f;
@@ -277,7 +310,15 @@ public class HealthDisplayHandler {
         g.pose().popMatrix();
     }
 
-    private static void drawToughness(GuiGraphics g, int toughnessValue, int sw, int sh, int x, int y, boolean showIcon) {
+    private static void drawToughness(
+            GuiGraphicsExtractor g,
+            int toughnessValue,
+            int sw,
+            int sh,
+            int x,
+            int y,
+            boolean showIcon
+    ) {
         if (!showIcon || toughnessValue <= 0) return;
 
         float scale = 1.0f;
@@ -301,7 +342,16 @@ public class HealthDisplayHandler {
         g.pose().popMatrix();
     }
 
-    private static void drawHunger(GuiGraphics guiGraphics, int hunger, int screenWidth, int screenHeight, int x, int y, boolean showIcon, boolean showNumeric) {
+    private static void drawHunger(
+            GuiGraphicsExtractor guiGraphics,
+            int hunger,
+            int screenWidth,
+            int screenHeight,
+            int x,
+            int y,
+            boolean showIcon,
+            boolean showNumeric
+    ) {
         Minecraft mc = Minecraft.getInstance();
         Font font = mc.font;
 
@@ -317,7 +367,17 @@ public class HealthDisplayHandler {
         }
     }
 
-    private static void drawOxygen(GuiGraphics guiGraphics, int air, int maxAir, int screenWidth, int screenHeight, int x, int y, boolean showIcon, boolean showNumeric) {
+    private static void drawOxygen(
+            GuiGraphicsExtractor guiGraphics,
+            int air,
+            int maxAir,
+            int screenWidth,
+            int screenHeight,
+            int x,
+            int y,
+            boolean showIcon,
+            boolean showNumeric
+    ) {
         if (showNumeric && air < maxAir) {
             drawShadowedText(guiGraphics, Minecraft.getInstance().font, (air / 20) + "/" + (maxAir / 20), (screenWidth / 2) + x - 10, screenHeight - y, 0xFF00BFFF);
         }
@@ -326,14 +386,21 @@ public class HealthDisplayHandler {
         }
     }
 
-    private static void drawAbsorption(GuiGraphics g, int absorption, int absX, int absY) {
+    private static void drawAbsorption(GuiGraphicsExtractor g, int absorption, int absX, int absY) {
         if (absorption > 0) {
             drawShadowedText(g, Minecraft.getInstance().font, "+" + absorption, absX, absY, 0xFFFFFF00);
         }
     }
 
 
-    private static void drawSaturation(GuiGraphics guiGraphics, int saturation, int screenWidth, int screenHeight, int x, int y) {
+    private static void drawSaturation(
+            GuiGraphicsExtractor guiGraphics,
+            int saturation,
+            int screenWidth,
+            int screenHeight,
+            int x,
+            int y
+    ) {
         if (saturation > 0) {
             drawShadowedText(guiGraphics, Minecraft.getInstance().font, "+" + saturation, (screenWidth / 2) + x + 46, screenHeight - y, 0xFFFFD700);
         }
@@ -375,13 +442,14 @@ public class HealthDisplayHandler {
         return (r << 16) | (g << 8) | b;
     }
 
-    private static void drawIcon(GuiGraphics g, Identifier tex, int x, int y, int w, int h) {
+    private static void drawIcon(GuiGraphicsExtractor g, Identifier tex, int x, int y, int w, int h) {
         g.blit(RenderPipelines.GUI_TEXTURED, tex, x, y, 0, 0, w, h, 16, 16, 0xFFFFFFFF);
     }
 
-    private static void drawShadowedText(GuiGraphics guiGraphics, Font font, String text, int x, int y, int color) {
-        guiGraphics.drawString(font, text, x, y, color, true);
+    private static void drawShadowedText(GuiGraphicsExtractor guiGraphics, Font font, String text, int x, int y, int color) {
+        guiGraphics.text(font, Component.literal(text), x, y, color, true);
     }
+
     @Nullable
     private static LivingEntity getMountWithHealth(Player player) {
         if (player != null) {
