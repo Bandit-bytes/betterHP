@@ -2,14 +2,12 @@
   "required": true,
   "package": "net.bandit.betterhp_fabric.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [
-    "SelectedItemNameOffsetMixin",
-    "VanillaHudMixin"
-  ],
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
-    "GuiMixin"
+    "GuiMixin",
+    "SelectedItemNameOffsetMixin",
+    "VanillaHudMixin"
   ]
 }

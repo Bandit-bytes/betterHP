@@ -17,8 +17,6 @@ public class ConfigManager {
     private static final File CONFIG_FILE = new File(FabricLoader.getInstance().getConfigDir().toFile(), "betterhp_config.json");
 
     private static ConfigData configData;
-    private static long lastSaveTime = 0;
-    private static final long SAVE_COOLDOWN_MS = 500;
 
     static {
         loadConfig();
@@ -51,13 +49,9 @@ public class ConfigManager {
     }
 
     public static synchronized void saveConfig() {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastSaveTime < SAVE_COOLDOWN_MS) return;
-
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(configData, writer);
             writer.flush();
-            lastSaveTime = currentTime;
             System.out.println("Configuration saved to " + CONFIG_FILE.getName());
         } catch (IOException e) {
             System.err.println("Error saving configuration file: " + e.getMessage());
@@ -91,6 +85,12 @@ public class ConfigManager {
     public static int saturationDisplayY() { return configData != null ? configData.saturationDisplayY : 43; }
     public static int mountDisplayX() { return configData != null ? configData.mountDisplayX : -140; }
     public static int mountDisplayY() { return configData != null ? configData.mountDisplayY : 45; }
+    public static boolean showStatusHealthIcons() { return configData == null || configData.showStatusHealthIcons; }
+    public static boolean appleSkinCompat() { return configData == null || configData.appleSkinCompat; }
+    public static boolean appleSkinFoodPreview() { return configData == null || configData.appleSkinFoodPreview; }
+    public static boolean appleSkinHealthPreview() { return configData == null || configData.appleSkinHealthPreview; }
+    public static boolean appleSkinExhaustionBar() { return configData == null || configData.appleSkinExhaustionBar; }
+
     public static boolean selectedItemNameOnlyWhenArmor() { return configData != null && configData.selectedItemNameOnlyWhenArmor; }
 
     public static List<String> mountHealthMobBlacklist() {
@@ -137,6 +137,14 @@ public class ConfigManager {
         int mountDisplayX = -140;
         int mountDisplayY = 45;
         int selectedItemNameOffsetY = -3;
+
+        // Poisoned / withered / frozen health icons
+        public boolean showStatusHealthIcons = true;
+        // AppleSkin compat (only used when AppleSkin is installed)
+        public boolean appleSkinCompat = true;
+        public boolean appleSkinFoodPreview = true;
+        public boolean appleSkinHealthPreview = true;
+        public boolean appleSkinExhaustionBar = true;
 
         public List<String> mountHealthMobBlacklist = new ArrayList<>(List.of(
                 "minecraft:camel"

@@ -37,7 +37,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(false)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().renderVanillaHud = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -45,7 +44,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(true)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().showHealthIcon = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -53,14 +51,12 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(true)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().showHungerIcon = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
         general.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.betterhp.showNumericHunger"), ConfigManager.getConfigData().showNumericHunger)
                 .setDefaultValue(true)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().showNumericHunger = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -69,14 +65,12 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(true)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().showArmorIcon = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
-        general.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.betterhp.showToughnessIcon"), ConfigManager.showArmorIcon())
+        general.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.betterhp.showToughnessIcon"), ConfigManager.showToughnessIcon())
                 .setDefaultValue(true)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().showToughnessIcon = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -84,14 +78,12 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(true)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().showBreatheIcon = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
         general.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.betterhp.showNumericOxygen"), ConfigManager.getConfigData().showNumericOxygen)
                 .setDefaultValue(true)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().showNumericOxygen = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -102,7 +94,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(-76)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().healthDisplayX = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -110,7 +101,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(44)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().healthDisplayY = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -119,7 +109,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(24)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().hungerDisplayX = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -127,7 +116,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(46)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().hungerDisplayY = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -136,7 +124,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(true)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().showSaturation = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -145,7 +132,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(80)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().saturationDisplayX = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -154,7 +140,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(43)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().saturationDisplayY = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -163,7 +148,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(-8)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().armorDisplayX = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -171,7 +155,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(56)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().armorDisplayY = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -180,7 +163,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(-8)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().toughnessDisplayX = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -188,7 +170,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(56)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().toughnessDisplayY = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -198,7 +179,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(24)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().breatheDisplayX = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -206,14 +186,12 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(60)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().breatheDisplayY = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
         general.addEntry(entryBuilder.startIntField(Component.translatable("config.betterhp.mountDisplayX"), ConfigManager.mountDisplayX())
                 .setDefaultValue(-76)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().mountDisplayX = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -221,7 +199,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(70)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().mountDisplayY = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -229,14 +206,14 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                         Component.translatable("config.betterhp.selectedItemNameOffsetY"),
                         ConfigManager.selectedItemNameOffsetY()
                 ).setDefaultValue(-3)
-                .setSaveConsumer(v -> { ConfigManager.getConfigData().selectedItemNameOffsetY = v; ConfigManager.saveConfig(); })
+                .setSaveConsumer(v -> { ConfigManager.getConfigData().selectedItemNameOffsetY = v; })
                 .build());
 
         general.addEntry(entryBuilder.startBooleanToggle(
                         Component.translatable("config.betterhp.selectedItemNameOnlyWhenArmor"),
                         ConfigManager.selectedItemNameOnlyWhenArmor()
                 ).setDefaultValue(true)
-                .setSaveConsumer(v -> { ConfigManager.getConfigData().selectedItemNameOnlyWhenArmor = v; ConfigManager.saveConfig(); })
+                .setSaveConsumer(v -> { ConfigManager.getConfigData().selectedItemNameOnlyWhenArmor = v; })
                 .build());
 
         general.addEntry(entryBuilder.startBooleanToggle(
@@ -245,7 +222,6 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 ).setDefaultValue(true)
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().showMountHealth = newValue;
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
@@ -255,12 +231,36 @@ public class BetterHpModMenuIntegration implements ModMenuApi {
                 ).setDefaultValue(new ArrayList<>())
                 .setSaveConsumer(newValue -> {
                     ConfigManager.getConfigData().mountHealthMobBlacklist = new ArrayList<>(newValue);
-                    ConfigManager.saveConfig();
                 })
                 .build());
 
 
 
+        ConfigCategory compat = builder.getOrCreateCategory(Component.translatable("config.betterhp.category.compat"));
+        compat.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.betterhp.showStatusHealthIcons"), ConfigManager.showStatusHealthIcons())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.betterhp.showStatusHealthIcons.tooltip"))
+                .setSaveConsumer(v -> ConfigManager.getConfigData().showStatusHealthIcons = v)
+                .build());
+        compat.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.betterhp.appleSkinCompat"), ConfigManager.appleSkinCompat())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.betterhp.appleSkinCompat.tooltip"))
+                .setSaveConsumer(v -> ConfigManager.getConfigData().appleSkinCompat = v)
+                .build());
+        compat.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.betterhp.appleSkinFoodPreview"), ConfigManager.appleSkinFoodPreview())
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> ConfigManager.getConfigData().appleSkinFoodPreview = v)
+                .build());
+        compat.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.betterhp.appleSkinHealthPreview"), ConfigManager.appleSkinHealthPreview())
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> ConfigManager.getConfigData().appleSkinHealthPreview = v)
+                .build());
+        compat.addEntry(entryBuilder.startBooleanToggle(Component.translatable("config.betterhp.appleSkinExhaustionBar"), ConfigManager.appleSkinExhaustionBar())
+                .setDefaultValue(true)
+                .setSaveConsumer(v -> ConfigManager.getConfigData().appleSkinExhaustionBar = v)
+                .build());
+
+        // One save after every entry has been applied.
         builder.setSavingRunnable(ConfigManager::saveConfig);
         return builder.build();
     }

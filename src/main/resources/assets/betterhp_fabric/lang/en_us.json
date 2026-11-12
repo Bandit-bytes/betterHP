@@ -27,5 +27,13 @@
   "config.betterhp.selectedItemNameOffsetY": "Selected item name Offset Y (neg is higher)",
   "config.betterhp.selectedItemNameOnlyWhenArmor": "Selected item name name offset applied only when armor is on.",
   "config.betterhp.showMountHealth": "Show Mount Health",
-  "config.betterhp.mountHealthMobBlacklist": "Mount Health Mob Blacklist"
+  "config.betterhp.mountHealthMobBlacklist": "Mount Health Mob Blacklist",
+  "config.betterhp.category.compat": "Status & Compat",
+  "config.betterhp.showStatusHealthIcons": "Status health icons",
+  "config.betterhp.showStatusHealthIcons.tooltip": "Swap the health icon while Poisoned, Withered or Frozen (like vanilla's heart types).",
+  "config.betterhp.appleSkinCompat": "AppleSkin compat",
+  "config.betterhp.appleSkinCompat.tooltip": "Only active when AppleSkin is installed.",
+  "config.betterhp.appleSkinFoodPreview": "AppleSkin: food preview",
+  "config.betterhp.appleSkinHealthPreview": "AppleSkin: health preview",
+  "config.betterhp.appleSkinExhaustionBar": "AppleSkin: exhaustion bar"
 }
