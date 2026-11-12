@@ -13,6 +13,18 @@ base {
 repositories {
     maven { url "https://maven.shedaniel.me/" }
     maven { url "https://maven.terraformersmc.com/releases/" }
+    // Modrinth maven: optional compat mods (AppleSkin)
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
     maven { url "https://maven.shedaniel.me/" }
     // Add repositories to retrieve artifacts from in here.
     // You should only use this when depending on other mods because
@@ -37,6 +49,10 @@ dependencies {
 
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // Optional compat: compile-only, never bundled. Only touched from integration/appleskin after
+    // FabricLoader confirms AppleSkin is installed.
+    modCompileOnly "maven.modrinth:appleskin:${project.appleskin_version}"
 
 }
 

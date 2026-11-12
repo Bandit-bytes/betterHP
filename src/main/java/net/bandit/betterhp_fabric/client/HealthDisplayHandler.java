@@ -10,7 +10,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.GameMode;
+import net.bandit.betterhp_fabric.integration.AppleSkinCompat;
 
 public class HealthDisplayHandler implements HudRenderCallback {
 
@@ -20,15 +20,23 @@ public class HealthDisplayHandler implements HudRenderCallback {
     private static final Identifier BREATHE_ICON = new Identifier("betterhp_fabric", "textures/gui/breathe_icon.png");
     private static final Identifier TOUGHNESS_ICON = new Identifier("betterhp_fabric", "textures/gui/toughness_icon.png");
     private static final Identifier HARDCORE_HEALTH_ICON = new Identifier("betterhp_fabric", "textures/gui/hardcore_health_icon.png");
+    private static final Identifier FROZEN_HEALTH_ICON = new Identifier("betterhp_fabric", "textures/gui/frozen_health_icon.png");
+    private static final Identifier POISONED_HEALTH_ICON = new Identifier("betterhp_fabric", "textures/gui/poisoned_health_icon.png");
+    private static final Identifier WITHERED_HEALTH_ICON = new Identifier("betterhp_fabric", "textures/gui/withered_health_icon.png");
+    private static final int FROZEN_COLOR = 0x9BE7FF;
 
     @Override
     public void onHudRender(DrawContext context, float tickDelta) {
         MinecraftClient client = MinecraftClient.getInstance();
         PlayerEntity player = client.player;
 
-        if (player == null || client.options.hudHidden || client.interactionManager.getCurrentGameMode() == GameMode.CREATIVE || client.interactionManager.getCurrentGameMode() == GameMode.SPECTATOR) {
+        // Same rule vanilla uses for its bars: nothing in creative/spectator (and never NPE before the world exists).
+        if (player == null || client.options.hudHidden || client.interactionManager == null
+                || !client.interactionManager.hasStatusBars() || client.world == null) {
             return;
         }
+        float time = player.age + tickDelta;
+        AppleSkinCompat.FoodPreview food = AppleSkinCompat.foodPreview(player);
 
         boolean isHardcore = client.world.getLevelProperties().isHardcore();
 
@@ -37,10 +45,14 @@ public class HealthDisplayHandler implements HudRenderCallback {
         int absorption = MathHelper.ceil(player.getAbsorptionAmount());
         int armorValue = player.getArmor();
         int hunger = player.getHungerManager().getFoodLevel();
-        int air = player.getAir();
+        int air = Math.max(0, player.getAir()); // negative while drowning
         int maxAir = player.getMaxAir();
 
-        int healthColor = determineHealthColor(player);
+        boolean statusIcons = ConfigManager.showStatusHealthIcons();
+        boolean frozen = statusIcons && player.isFrozen();
+        int healthColor = frozen
+                ? interpolateColor(0.5f + 0.5f * MathHelper.sin(time * 0.15f), FROZEN_COLOR, 0xE6FAFF)
+                : determineHealthColor(player);
         int hungerColor = determineHungerColor(hunger, 20);
         int breatheColor = 0x00BFFF;
 
@@ -58,7 +70,10 @@ public class HealthDisplayHandler implements HudRenderCallback {
 
         client.getProfiler().push("betterhp_healthIcon");
         if (ConfigManager.showHealthIcon()) {
-            Identifier icon = isHardcore ? HARDCORE_HEALTH_ICON : HEALTH_ICON;
+            Identifier icon = statusIcons && player.hasStatusEffect(StatusEffects.POISON) ? POISONED_HEALTH_ICON
+                    : statusIcons && player.hasStatusEffect(StatusEffects.WITHER) ? WITHERED_HEALTH_ICON
+                    : frozen ? FROZEN_HEALTH_ICON
+                    : isHardcore ? HARDCORE_HEALTH_ICON : HEALTH_ICON;
             renderIcon(context, icon, healthPosX - 18, healthPosY - 4);
         }
         if (ConfigManager.showHealthValue()) {
@@ -68,6 +83,11 @@ public class HealthDisplayHandler implements HudRenderCallback {
             if (absorption > 0) {
                 int width = client.textRenderer.getWidth(health + "/" + maxHealth);
                 drawShadowedText(context, client, "+" + absorption, healthPosX + width + 3, healthPosY, 0xFFFF00);
+            }
+
+            // AppleSkin: health the held food will regenerate, floating just above the value.
+            if (food != null && food.health() > 0F) {
+                drawShadowedText(context, client, "+" + formatDecimal(food.health()), healthPosX, healthPosY - 10, withAlpha(0x55FF55, flashAlpha(time)));
             }
         }
         client.getProfiler().pop();
@@ -79,21 +99,45 @@ public class HealthDisplayHandler implements HudRenderCallback {
         if (ConfigManager.showHungerValue()) {
             String hungerText = hunger + "/20";
             drawShadowedText(context, client, hungerText, hungerPosX - client.textRenderer.getWidth(hungerText), hungerPosY, hungerColor);
+
+            int textWidth = client.textRenderer.getWidth(hungerText);
+            int textStart = hungerPosX - textWidth;
+
+            // AppleSkin: exhaustion bar under the number.
+            float exhaustion = AppleSkinCompat.exhaustionFraction(player);
+            if (exhaustion >= 0F) {
+                context.fill(textStart, hungerPosY + 10, hungerPosX, hungerPosY + 11, 0x60000000);
+                int filled = Math.round(textWidth * exhaustion);
+                if (filled > 0) context.fill(textStart, hungerPosY + 10, textStart + filled, hungerPosY + 11, 0xC0FFFFFF);
+            }
+
+            // AppleSkin: what the held food restores, floating just above the number.
+            if (food != null && (food.hunger() > 0 || food.saturation() > 0F)) {
+                int alpha = flashAlpha(time);
+                String preview = food.hunger() > 0 ? "+" + food.hunger() : "";
+                if (!preview.isEmpty()) drawShadowedText(context, client, preview, textStart, hungerPosY - 10, withAlpha(0xFF7518, alpha));
+                if (food.saturation() > 0F) {
+                    int sx = textStart + (preview.isEmpty() ? 0 : client.textRenderer.getWidth(preview) + 3);
+                    drawShadowedText(context, client, "+" + formatDecimal(food.saturation()), sx, hungerPosY - 10, withAlpha(0xFFD700, alpha));
+                }
+            }
         }
         client.getProfiler().pop();
 
         client.getProfiler().push("betterhp_armorIcon");
-        if (ConfigManager.showArmorIcon()) {
+        // Only with armor on (it used to show an armor icon with "0" at all times).
+        if (ConfigManager.showArmorIcon() && armorValue > 0) {
             renderIcon(context, ARMOR_ICON, armorPosX - 18, armorPosY - 4);
         }
-        if (ConfigManager.showArmorValue()) {
+        if (ConfigManager.showArmorValue() && armorValue > 0) {
             drawShadowedText(context, client, String.valueOf(armorValue), armorPosX, armorPosY, 0xFFFFFF);
         }
         client.getProfiler().pop();
 
         client.getProfiler().push("betterhp_toughnessIcon");
-        if (ConfigManager.showToughnessIcon() || ConfigManager.showToughnessValue()) {
-            int toughness = (int) player.getAttributeValue(EntityAttributes.GENERIC_ARMOR_TOUGHNESS);
+        int toughness = (int) player.getAttributeValue(EntityAttributes.GENERIC_ARMOR_TOUGHNESS);
+        // Only with toughness (it used to show "0" at all times).
+        if (toughness > 0 && (ConfigManager.showToughnessIcon() || ConfigManager.showToughnessValue())) {
             int toughnessPosX = armorPosX + ConfigManager.toughnessDisplayX();
             int toughnessPosY = armorPosY + ConfigManager.toughnessDisplayY();
 
@@ -119,7 +163,24 @@ public class HealthDisplayHandler implements HudRenderCallback {
         }
         client.getProfiler().pop();
     }
-        private void renderIcon(DrawContext context, Identifier icon, int x, int y) {
+    /** AppleSkin-style flashing for preview values. */
+    private static int flashAlpha(float time) {
+        return (int) (110 + 145 * (0.5f + 0.5f * MathHelper.sin(time * 0.25f)));
+    }
+
+    private static int withAlpha(int rgb, int alpha) {
+        // The font renderer treats alpha < 4 as fully opaque, so never go that low.
+        return (MathHelper.clamp(alpha, 8, 255) << 24) | (rgb & 0xFFFFFF);
+    }
+
+    /** "3", "2.5": one decimal, dropped when whole. */
+    private static String formatDecimal(float value) {
+        float rounded = Math.round(value * 10f) / 10f;
+        if (rounded == (int) rounded) return Integer.toString((int) rounded);
+        return String.format(java.util.Locale.ROOT, "%.1f", rounded);
+    }
+
+    private void renderIcon(DrawContext context, Identifier icon, int x, int y) {
         RenderSystem.setShaderTexture(0, icon);
         context.drawTexture(icon, x, y, 0, 0, 16, 16, 16, 16);
     }
@@ -147,7 +208,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
         }
 
         if (player.hasStatusEffect(StatusEffects.POISON)) return 0x9ACD32;
-        if (player.hasStatusEffect(StatusEffects.WITHER)) return 0x403030;
+        if (player.hasStatusEffect(StatusEffects.WITHER)) return 0x8C8484; // readable on dark backgrounds
 
         float health = player.getHealth();
         float maxHealth = player.getMaxHealth();

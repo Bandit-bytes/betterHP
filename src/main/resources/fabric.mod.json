@@ -1,31 +1,40 @@
 {
-  "schemaVersion": 1,
-  "id": "betterhp_fabric",
-  "version": "${version}",
-  "name": "betterHP fabric",
-  "description": "BetterHP Mod for Fabric",
-  "authors": ["Bandit-Bytes"],
-  "icon": "assets/betterhp_fabric/icon.png",
-  "contact": {},
-  "license": "All-Rights-Reserved",
-  "environment": "*",
-  "entrypoints": {
-    "client": [
-      "net.bandit.betterhp_fabric.client.betterhp_fabricClient"
-    ],
-    "main": [
-      "net.bandit.betterhp_fabric.BetterHPFabric"
-    ],
-    "modmenu": [
-      "net.bandit.betterhp_fabric.config.BetterHpModMenuIntegration"
-    ]
-  },
-  "mixins": [
-    "betterhp_fabric.mixins.json"
-  ],
-  "depends": {
-    "fabricloader": ">=0.15.11",
-    "fabric": "*",
-    "minecraft": "~1.20.1"
-  }
+	"schemaVersion": 1,
+	"id": "betterhp_fabric",
+	"version": "${version}",
+	"name": "betterHP fabric",
+	"description": "A cleaner HUD: health, hunger, armor and more as crisp numbers and icons. Fully customizable.",
+	"authors": [
+		"Bandit-Bytes"
+	],
+	"icon": "assets/betterhp_fabric/icon.png",
+	"contact": {
+		"homepage": "https://modrinth.com/mod/betterhp",
+		"issues": "https://github.com/Bandit-bytes/betterHP/issues"
+	},
+	"license": "All-Rights-Reserved",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"net.bandit.betterhp_fabric.client.betterhp_fabricClient"
+		],
+		"main": [
+			"net.bandit.betterhp_fabric.BetterHPFabric"
+		],
+		"modmenu": [
+			"net.bandit.betterhp_fabric.config.BetterHpModMenuIntegration"
+		]
+	},
+	"mixins": [
+		"betterhp_fabric.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.11",
+		"fabric": "*",
+		"minecraft": "~1.20.1"
+	},
+	"suggests": {
+		"appleskin": "*",
+		"modmenu": "*"
+	}
 }

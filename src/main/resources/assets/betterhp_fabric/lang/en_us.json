@@ -18,5 +18,13 @@
   "config.betterhp.toughnessDisplayY": "Toughness Display Y Position",
   "config.betterhp.breatheDisplayY": "Oxygen Display Y Position",
   "config.betterhp.showNumericHunger": "Show Numeric Hunger",
-  "config.betterhp.showNumericOxygen": "Show Numeric Oxygen"
+  "config.betterhp.showNumericOxygen": "Show Numeric Oxygen",
+  "config.betterhp.category.compat": "Status & Compat",
+  "config.betterhp.showStatusHealthIcons": "Status health icons",
+  "config.betterhp.showStatusHealthIcons.tooltip": "Swap the health icon while Poisoned, Withered or Frozen (like vanilla's heart types).",
+  "config.betterhp.appleSkinCompat": "AppleSkin compat",
+  "config.betterhp.appleSkinCompat.tooltip": "Only active when AppleSkin is installed.",
+  "config.betterhp.appleSkinFoodPreview": "AppleSkin: food preview",
+  "config.betterhp.appleSkinHealthPreview": "AppleSkin: health preview",
+  "config.betterhp.appleSkinExhaustionBar": "AppleSkin: exhaustion bar"
 }

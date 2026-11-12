@@ -1,34 +1,19 @@
 package net.bandit.betterhp_fabric;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.bandit.betterhp_fabric.client.HealthDisplayHandler;
-import net.bandit.betterhp_fabric.config.ConfigManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * Common entrypoint. Better HP is client-only: the HUD and config events are registered from
+ * {@link net.bandit.betterhp_fabric.client.betterhp_fabricClient}, so a dedicated server that has
+ * the jar installed never loads client classes.
+ */
 public class BetterHPFabric implements ModInitializer {
     public static final String MOD_ID = "better_hp";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     @Override
     public void onInitialize() {
-        // Load the configuration when the mod initializes
-        ConfigManager.loadConfig();
-
-        // Register client-specific event listeners
-        HudRenderCallback.EVENT.register(new HealthDisplayHandler());
-
-        // Ensure the config is saved when the player disconnects
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> ConfigManager.saveConfig());
-
-        // Avoid excessive saves, and ensure the game updates correctly
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (!client.isPaused() && client.player != null) {
-                // Implement additional logic if needed to trigger saves or updates
-                // Example: Save configuration periodically or based on certain events
-            }
-        });
-
-        System.out.println("BetterHPFabric Mod Initialized");
     }
 }
