@@ -15,8 +15,6 @@ public class ConfigManager {
     private static final File CONFIG_FILE = new File(FabricLoader.getInstance().getConfigDir().toFile(), "betterhp_config.json");
 
     private static ConfigData configData;
-    private static long lastSaveTime = 0;
-    private static final long SAVE_COOLDOWN_MS = 500;
 
     static {
         loadConfig();
@@ -43,13 +41,9 @@ public class ConfigManager {
     }
 
     public static synchronized void saveConfig() {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastSaveTime < SAVE_COOLDOWN_MS) return;
-
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(configData, writer);
             writer.flush();
-            lastSaveTime = currentTime;
             System.out.println("Configuration saved to " + CONFIG_FILE.getName());
         } catch (IOException e) {
             System.err.println("Error saving configuration file: " + e.getMessage());
@@ -82,6 +76,12 @@ public class ConfigManager {
     public static int mountDisplayX() {return configData != null ?configData.mountDisplayX: -85; }
     public static int mountDisplayY() { return configData != null ? configData.mountDisplayY: 60; }
 
+    public static boolean showStatusHealthIcons() { return configData == null || configData.showStatusHealthIcons; }
+    public static boolean appleSkinCompat() { return configData == null || configData.appleSkinCompat; }
+    public static boolean appleSkinFoodPreview() { return configData == null || configData.appleSkinFoodPreview; }
+    public static boolean appleSkinHealthPreview() { return configData == null || configData.appleSkinHealthPreview; }
+    public static boolean appleSkinExhaustionBar() { return configData == null || configData.appleSkinExhaustionBar; }
+
     public static ConfigData getConfigData() {
         if (configData == null) loadConfig();
         return configData;
@@ -93,6 +93,14 @@ public class ConfigManager {
     }
 
     public static class ConfigData {
+        // Poisoned / withered / frozen health icons
+        public boolean showStatusHealthIcons = true;
+        // AppleSkin compat (only used when AppleSkin is installed)
+        public boolean appleSkinCompat = true;
+        public boolean appleSkinFoodPreview = true;
+        public boolean appleSkinHealthPreview = true;
+        public boolean appleSkinExhaustionBar = true;
+
         boolean renderVanillaHud = false;
         boolean showHealthIcon = true;
         boolean showArmorIcon = true;
