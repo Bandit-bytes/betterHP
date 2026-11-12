@@ -23,5 +23,13 @@
   "config.betterhp.saturationDisplayX": "Saturation Display X",
   "config.betterhp.saturationDisplayY": "Saturation Display Y",
   "config.betterhp.mountDisplayX": "Mount Display X Position",
-  "config.betterhp.mountDisplayY": "Mount Display Y Position"
+  "config.betterhp.mountDisplayY": "Mount Display Y Position",
+  "config.betterhp.category.compat": "Status & Compat",
+  "config.betterhp.showStatusHealthIcons": "Status health icons",
+  "config.betterhp.showStatusHealthIcons.tooltip": "Swap the health icon while Poisoned, Withered or Frozen (like vanilla's heart types).",
+  "config.betterhp.appleSkinCompat": "AppleSkin compat",
+  "config.betterhp.appleSkinCompat.tooltip": "Only active when AppleSkin is installed.",
+  "config.betterhp.appleSkinFoodPreview": "AppleSkin: food preview",
+  "config.betterhp.appleSkinHealthPreview": "AppleSkin: health preview",
+  "config.betterhp.appleSkinExhaustionBar": "AppleSkin: exhaustion bar"
 }

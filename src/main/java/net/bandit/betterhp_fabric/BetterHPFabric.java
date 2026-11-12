@@ -1,19 +1,19 @@
 package net.bandit.betterhp_fabric;
 
-import net.bandit.betterhp_fabric.config.ConfigManager;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Common entrypoint. Better HP is client-only: the HUD, config events and mixins are all
+ * registered from {@link net.bandit.betterhp_fabric.client.BetterHpFabricClient}, so a dedicated
+ * server that has the jar installed never loads client classes.
+ */
 public class BetterHPFabric implements ModInitializer {
-    public static final String MOD_ID = "better_hp";
+	public static final String MOD_ID = "better_hp";
+	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-
-    @Override
-    public void onInitialize() {
-        ConfigManager.loadConfig();
-
-        LOGGER.info("BetterHP Fabric initialized");
-    }
+	@Override
+	public void onInitialize() {
+	}
 }
