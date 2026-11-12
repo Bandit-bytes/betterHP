@@ -1,203 +1,241 @@
 package net.bandit.better_hp.config;
 
-import net.bandit.better_hp.BetterhpMod;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-@EventBusSubscriber(modid = BetterhpMod.MOD_ID)
-public class BetterHPConfig {
+/**
+ * Client config for Better HP.
+ *
+ * <p>Values are read straight from the spec ({@code .get()} is cached by NeoForge and
+ * invalidated on reload), so there is no hand-maintained cache that can go stale.
+ *
+ * <p>The original (pre-2.3) keys live at the top level with unchanged names so existing
+ * {@code better_hp-client.toml} files keep their values. Compat options live in their
+ * own sections.
+ */
+public final class BetterHPConfig {
 
-    // Configuration builder for client settings
-    private static final ModConfigSpec.Builder CLIENT_BUILDER = new ModConfigSpec.Builder();
+    private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
-    // Configuration options
-    public static final ModConfigSpec.BooleanValue enableCustomHUD = CLIENT_BUILDER
-            .comment("Enable or disable the custom Better HP HUD")
+    // ------------------------------------------------------------------ general
+
+    public static final ModConfigSpec.BooleanValue enableCustomHUD = BUILDER
+            .comment("Enable or disable the custom Better HP HUD. When false, the vanilla HUD is fully restored.")
             .define("enableCustomHUD", true);
 
-    public static final ModConfigSpec.BooleanValue showVanillaHearts = CLIENT_BUILDER
+    public static final ModConfigSpec.DoubleValue hudIconScale = BUILDER
+            .comment("Scale of BetterHP HUD icons. 1.0 = normal size")
+            .defineInRange("hudIconScale", 1.0, 0.5, 4.0);
+
+    public static final ModConfigSpec.DoubleValue hudTextScale = BUILDER
+            .comment("Scale of BetterHP HUD text. 1.0 = normal size")
+            .defineInRange("hudTextScale", 1.0, 0.5, 4.0);
+
+    // ------------------------------------------------------------------ vanilla bars
+
+    public static final ModConfigSpec.BooleanValue showVanillaHearts = BUILDER
             .comment("Show vanilla hearts")
             .define("showVanillaHearts", false);
 
-    public static final ModConfigSpec.BooleanValue enableDynamicHealthColor = CLIENT_BUILDER
-            .comment("Enable dynamic health color change (Green -> Full, Yellow -> Low, Red -> Critical)")
-            .define("enableDynamicHealthColor", true);
-
-    public static final ModConfigSpec.BooleanValue showVanillaArmor = CLIENT_BUILDER
+    public static final ModConfigSpec.BooleanValue showVanillaArmor = BUILDER
             .comment("Show vanilla armor bar")
             .define("showVanillaArmor", false);
 
-    public static final ModConfigSpec.BooleanValue showVanillaHunger = CLIENT_BUILDER
+    public static final ModConfigSpec.BooleanValue showVanillaHunger = BUILDER
             .comment("Show vanilla hunger bar")
             .define("showVanillaHunger", false);
 
-    public static final ModConfigSpec.BooleanValue showVanillaOxygen = CLIENT_BUILDER
+    public static final ModConfigSpec.BooleanValue showVanillaOxygen = BUILDER
             .comment("Show vanilla oxygen bubbles")
             .define("showVanillaOxygen", false);
 
-    public static final ModConfigSpec.BooleanValue showNumericHunger = CLIENT_BUILDER
-            .comment("Show numeric hunger instead of vanilla hunger bar")
-            .define("showNumericHunger", true);
-
-    public static final ModConfigSpec.BooleanValue showNumericHealth = CLIENT_BUILDER
-            .comment("Show numeric health instead of vanilla health bar")
-            .define("showNumericHealth", true);
-
-    public static final ModConfigSpec.BooleanValue showOxygenIcon = CLIENT_BUILDER
-            .comment("Show custom oxygen icon when underwater")
-            .define("showOxygenIcon", true);
-
-    public static final ModConfigSpec.BooleanValue showNumericOxygen = CLIENT_BUILDER
-            .comment("Show numeric oxygen value when underwater")
-            .define("showNumericOxygen", true);
-
-    public static final ModConfigSpec.BooleanValue showHealthIcon = CLIENT_BUILDER
-            .comment("Show custom health icon")
-            .define("showHealthIcon", true);
-
-    public static final ModConfigSpec.BooleanValue showArmorIcon = CLIENT_BUILDER
-            .comment("Show custom armor icon")
-            .define("showArmorIcon", true);
-
-    public static final ModConfigSpec.BooleanValue showHungerIcon = CLIENT_BUILDER
-            .comment("Show custom hunger icon")
-            .define("showHungerIcon", true);
-
-    public static final ModConfigSpec.IntValue healthDisplayX = CLIENT_BUILDER
-            .comment("Horizontal position of the health icon display")
-            .defineInRange("healthDisplayX", -70, -1000, 1000);
-
-    public static final ModConfigSpec.IntValue healthDisplayY = CLIENT_BUILDER
-            .comment("Vertical position of the health icon display")
-            .defineInRange("healthDisplayY", 43, 0, 1000);
-
-    public static final ModConfigSpec.IntValue armorDisplayX = CLIENT_BUILDER
-            .comment("Horizontal position of the armor icon display")
-            .defineInRange("armorDisplayX", -5, -1000, 1000);
-
-    public static final ModConfigSpec.IntValue armorDisplayY = CLIENT_BUILDER
-            .comment("Vertical position of the armor icon display")
-            .defineInRange("armorDisplayY", 56, 0, 1000);
-
-    public static final ModConfigSpec.BooleanValue showToughnessIcon = CLIENT_BUILDER
-            .comment("Show custom toughness icon")
-            .define("showToughnessIcon", true);
-
-    public static final ModConfigSpec.IntValue toughnessDisplayX = CLIENT_BUILDER
-            .comment("Horizontal position of the toughness icon display")
-            .defineInRange("toughnessDisplayX", 35, -1000, 1000);
-
-    public static final ModConfigSpec.IntValue toughnessDisplayY = CLIENT_BUILDER
-            .comment("Vertical position of the toughness icon display")
-            .defineInRange("toughnessDisplayY", 56, 0, 1000);
-
-
-    public static final ModConfigSpec.IntValue hungerDisplayX = CLIENT_BUILDER
-            .comment("Horizontal position of the hunger icon display")
-            .defineInRange("hungerDisplayX", 45, -1000, 1000);
-
-    public static final ModConfigSpec.IntValue hungerDisplayY = CLIENT_BUILDER
-            .comment("Vertical position of the hunger icon display")
-            .defineInRange("hungerDisplayY", 43, 0, 1000);
-
-    public static final ModConfigSpec.IntValue oxygenDisplayX = CLIENT_BUILDER
-            .comment("Horizontal position of the oxygen icon display")
-            .defineInRange("oxygenDisplayX", 67, -1000, 1000);
-
-    public static final ModConfigSpec.IntValue oxygenDisplayY = CLIENT_BUILDER
-            .comment("Vertical position of the oxygen icon display")
-            .defineInRange("oxygenDisplayY", 60, 0, 1000);
-
-    public static final ModConfigSpec.IntValue healthColor = CLIENT_BUILDER
-            .comment("Color of the health numerical value in the HUD. Uses Decimal color code; Default is Red")
-            .defineInRange("healthColor", 0xFF5555, 0x000000, 0xFFFFFF);
-
-    public static final ModConfigSpec.BooleanValue showVanillaMountHealth = CLIENT_BUILDER
+    public static final ModConfigSpec.BooleanValue showVanillaMountHealth = BUILDER
             .comment("Show vanilla mount hearts (when riding an entity like a horse)")
             .define("showVanillaMountHealth", false);
 
-    public static final ModConfigSpec.BooleanValue showMountIcon = CLIENT_BUILDER
-            .comment("Show custom mount health icon and value on HUD when riding")
-            .define("showMountIcon", true);
+    // ------------------------------------------------------------------ health
 
+    public static final ModConfigSpec.BooleanValue showHealthIcon = BUILDER
+            .comment("Show custom health icon")
+            .define("showHealthIcon", true);
 
-    public static final ModConfigSpec.IntValue mountDisplayX = CLIENT_BUILDER
-            .comment("Horizontal position of the mount health icon display")
-            .defineInRange("mountDisplayX", -70, -1000, 1000);
+    public static final ModConfigSpec.BooleanValue showNumericHealth = BUILDER
+            .comment("Show numeric health instead of vanilla health bar")
+            .define("showNumericHealth", true);
 
-    public static final ModConfigSpec.IntValue mountDisplayY = CLIENT_BUILDER
-            .comment("Vertical position of the mount health icon display")
-            .defineInRange("mountDisplayY", 63, 0, 1000);
+    public static final ModConfigSpec.BooleanValue enableDynamicHealthColor = BUILDER
+            .comment("Enable dynamic health color change (Green -> Full, Yellow -> Low, Red -> Critical)")
+            .define("enableDynamicHealthColor", true);
 
-    public static final ModConfigSpec.BooleanValue showAbsorptionText = CLIENT_BUILDER
+    public static final ModConfigSpec.IntValue healthColor = BUILDER
+            .comment("Color of the health numerical value in the HUD. Uses Decimal color code; Default is Red")
+            .defineInRange("healthColor", 0xFF5555, 0x000000, 0xFFFFFF);
+
+    public static final ModConfigSpec.BooleanValue showStatusHealthIcons = BUILDER
+            .comment("Swap the health icon and text colour while Poisoned, Withered or Frozen (like vanilla's heart types).",
+                    "Frozen covers powder snow.")
+            .define("showStatusHealthIcons", true);
+
+    public static final ModConfigSpec.IntValue healthDisplayX = BUILDER
+            .comment("Horizontal position of the health icon display")
+            .defineInRange("healthDisplayX", -70, -1000, 1000);
+
+    public static final ModConfigSpec.IntValue healthDisplayY = BUILDER
+            .comment("Vertical position of the health icon display")
+            .defineInRange("healthDisplayY", 43, 0, 1000);
+
+    public static final ModConfigSpec.BooleanValue showAbsorptionText = BUILDER
             .comment("Show +Absorption numeric text")
             .define("showAbsorptionText", true);
 
-    public static final ModConfigSpec.BooleanValue absorptionFollowHealthWidth = CLIENT_BUILDER
+    public static final ModConfigSpec.BooleanValue absorptionFollowHealthWidth = BUILDER
             .comment("Place absorption right after the rendered health text so it never overlaps")
             .define("absorptionFollowHealthWidth", true);
 
-    public static final ModConfigSpec.IntValue absorptionOffsetX = CLIENT_BUILDER
+    public static final ModConfigSpec.IntValue absorptionOffsetX = BUILDER
             .comment("Absorption X offset RELATIVE to the health anchor (used if absorptionFollowHealthWidth=false)")
             .defineInRange("absorptionOffsetX", -18, -1000, 1000);
 
-    public static final ModConfigSpec.IntValue absorptionOffsetY = CLIENT_BUILDER
+    public static final ModConfigSpec.IntValue absorptionOffsetY = BUILDER
             .comment("Absorption Y offset RELATIVE to the health anchor (positive moves down)")
             .defineInRange("absorptionOffsetY", 0, -1000, 1000);
 
+    // ------------------------------------------------------------------ armor / toughness
 
-    public static final ModConfigSpec.BooleanValue showSaturationText = CLIENT_BUILDER
+    public static final ModConfigSpec.BooleanValue showArmorIcon = BUILDER
+            .comment("Show custom armor icon")
+            .define("showArmorIcon", true);
+
+    public static final ModConfigSpec.IntValue armorDisplayX = BUILDER
+            .comment("Horizontal position of the armor icon display")
+            .defineInRange("armorDisplayX", -5, -1000, 1000);
+
+    public static final ModConfigSpec.IntValue armorDisplayY = BUILDER
+            .comment("Vertical position of the armor icon display")
+            .defineInRange("armorDisplayY", 56, 0, 1000);
+
+    public static final ModConfigSpec.BooleanValue showToughnessIcon = BUILDER
+            .comment("Show custom toughness icon")
+            .define("showToughnessIcon", true);
+
+    public static final ModConfigSpec.IntValue toughnessDisplayX = BUILDER
+            .comment("Horizontal position of the toughness icon display")
+            .defineInRange("toughnessDisplayX", 35, -1000, 1000);
+
+    public static final ModConfigSpec.IntValue toughnessDisplayY = BUILDER
+            .comment("Vertical position of the toughness icon display")
+            .defineInRange("toughnessDisplayY", 56, 0, 1000);
+
+    // ------------------------------------------------------------------ hunger
+
+    public static final ModConfigSpec.BooleanValue showHungerIcon = BUILDER
+            .comment("Show custom hunger icon")
+            .define("showHungerIcon", true);
+
+    public static final ModConfigSpec.BooleanValue showNumericHunger = BUILDER
+            .comment("Show numeric hunger instead of vanilla hunger bar")
+            .define("showNumericHunger", true);
+
+    public static final ModConfigSpec.IntValue hungerDisplayX = BUILDER
+            .comment("Horizontal position of the hunger icon display")
+            .defineInRange("hungerDisplayX", 45, -1000, 1000);
+
+    public static final ModConfigSpec.IntValue hungerDisplayY = BUILDER
+            .comment("Vertical position of the hunger icon display")
+            .defineInRange("hungerDisplayY", 43, 0, 1000);
+
+    public static final ModConfigSpec.BooleanValue showSaturationText = BUILDER
             .comment("Show +Saturation numeric text")
             .define("showSaturationText", true);
 
-    public static final ModConfigSpec.BooleanValue hideSaturationIfVanillaHunger = CLIENT_BUILDER
+    public static final ModConfigSpec.BooleanValue hideSaturationIfVanillaHunger = BUILDER
             .comment("Hide saturation number when vanilla hunger bar is enabled")
             .define("hideSaturationIfVanillaHunger", true);
 
-    public static final ModConfigSpec CLIENT_SPEC = CLIENT_BUILDER.build();
+    // ------------------------------------------------------------------ oxygen
 
-    public static boolean customHUDEnabled;
-    public static boolean heartsEnabled;
-    public static boolean dynamicHealthColor;
-    public static int healthX, healthY;
-    public static int armorX, armorY;
-    public static boolean toughnessIconEnabled;
-    public static int toughnessX, toughnessY;
-    public static boolean mountIconEnabled;
-    public static boolean vanillaMountHeartsEnabled;
-    public static int mountX, mountY;
+    public static final ModConfigSpec.BooleanValue showOxygenIcon = BUILDER
+            .comment("Show custom oxygen icon when underwater")
+            .define("showOxygenIcon", true);
 
+    public static final ModConfigSpec.BooleanValue showNumericOxygen = BUILDER
+            .comment("Show numeric oxygen value when underwater")
+            .define("showNumericOxygen", true);
 
-    @SubscribeEvent
-    public static void onConfigLoad(ModConfigEvent event) {
-        if (event.getConfig().getSpec() == CLIENT_SPEC) {
-            loadCachedConfigValues();
-            BetterhpMod.getLogger().info("BetterHP config reloaded.");
-        }
+    public static final ModConfigSpec.IntValue oxygenDisplayX = BUILDER
+            .comment("Horizontal position of the oxygen icon display")
+            .defineInRange("oxygenDisplayX", 67, -1000, 1000);
+
+    public static final ModConfigSpec.IntValue oxygenDisplayY = BUILDER
+            .comment("Vertical position of the oxygen icon display")
+            .defineInRange("oxygenDisplayY", 60, 0, 1000);
+
+    // ------------------------------------------------------------------ mount
+
+    public static final ModConfigSpec.BooleanValue showMountIcon = BUILDER
+            .comment("Show custom mount health icon and value on HUD when riding")
+            .define("showMountIcon", true);
+
+    public static final ModConfigSpec.IntValue mountDisplayX = BUILDER
+            .comment("Horizontal position of the mount health icon display")
+            .defineInRange("mountDisplayX", -70, -1000, 1000);
+
+    public static final ModConfigSpec.IntValue mountDisplayY = BUILDER
+            .comment("Vertical position of the mount health icon display")
+            .defineInRange("mountDisplayY", 63, 0, 1000);
+
+    // ------------------------------------------------------------------ held item name
+
+    public static final ModConfigSpec.IntValue selectedItemNameOffsetY = BUILDER
+            .comment("Moves the vanilla held-item name text (e.g., 'Splash Potion of Healing'). Negative = higher, Positive = lower.")
+            .defineInRange("selectedItemNameOffsetY", -10, -40, 40);
+
+    public static final ModConfigSpec.BooleanValue moveSelectedItemNameOnlyWhenArmor = BUILDER
+            .comment("Only apply the selected item name offset when the player has armor > 0.")
+            .define("moveSelectedItemNameOnlyWhenArmor", true);
+
+    // ------------------------------------------------------------------ AppleSkin
+
+    public static final ModConfigSpec.BooleanValue appleSkinCompat;
+    public static final ModConfigSpec.BooleanValue appleSkinHideOverlays;
+    public static final ModConfigSpec.BooleanValue appleSkinFoodPreview;
+    public static final ModConfigSpec.BooleanValue appleSkinHealthPreview;
+    public static final ModConfigSpec.BooleanValue appleSkinExhaustionBar;
+
+    static {
+        BUILDER.comment("AppleSkin compat (only active when AppleSkin is installed).").push("appleskin");
+        appleSkinCompat = BUILDER
+                .comment("Master switch for AppleSkin compat.")
+                .define("enabled", true);
+        appleSkinHideOverlays = BUILDER
+                .comment("Hide AppleSkin's bar overlays while the matching vanilla bar is hidden by BetterHP,",
+                        "so they don't float over empty space. BetterHP shows the same info as text instead.")
+                .define("hideAppleSkinBarOverlays", true);
+        appleSkinFoodPreview = BUILDER
+                .comment("While holding food, show how much hunger (+N) and saturation it restores next to the hunger value.",
+                        "Follows AppleSkin's own 'showFoodValuesHudOverlay' / 'showFoodValuesHudOverlayWhenOffhand' settings.")
+                .define("showFoodPreview", true);
+        appleSkinHealthPreview = BUILDER
+                .comment("While holding food, show the estimated health it will regenerate next to the health value.",
+                        "Follows AppleSkin's own 'showFoodHealthHudOverlay' setting.")
+                .define("showHealthPreview", true);
+        appleSkinExhaustionBar = BUILDER
+                .comment("Draw a thin exhaustion bar under the hunger value.",
+                        "Follows AppleSkin's own 'showFoodExhaustionHudUnderlay' setting.")
+                .define("showExhaustionBar", true);
+        BUILDER.pop();
     }
 
-    public static void loadCachedConfigValues() {
-        customHUDEnabled = enableCustomHUD.get();
-        heartsEnabled = showVanillaHearts.get();
-        dynamicHealthColor = enableDynamicHealthColor.get();
-        healthX = healthDisplayX.get();
-        healthY = healthDisplayY.get();
-        armorX = armorDisplayX.get();
-        armorY = armorDisplayY.get();
-        toughnessIconEnabled = showToughnessIcon.get();
-        toughnessX = toughnessDisplayX.get();
-        toughnessY = toughnessDisplayY.get();
-        mountIconEnabled = showMountIcon.get();
-        vanillaMountHeartsEnabled = showVanillaMountHealth.get();
-        mountX = mountDisplayX.get();
-        mountY = mountDisplayY.get();
+    public static final ModConfigSpec CLIENT_SPEC = BUILDER.build();
 
+    private BetterHPConfig() {}
+
+    /** True once the client config file has been read. Rendering before this would throw. */
+    public static boolean isLoaded() {
+        return CLIENT_SPEC.isLoaded();
     }
 
-    public static void reloadConfig() {
-        loadCachedConfigValues();
-        BetterhpMod.getLogger().info("Config reloaded dynamically.");
+    /** Better HP is drawing its HUD (config loaded and the master switch on). */
+    public static boolean hudActive() {
+        return isLoaded() && enableCustomHUD.get();
     }
 }
