@@ -13,6 +13,11 @@ public class BetterHPConfig {
         CLIENT = specPair.getLeft();
     }
 
+    /** True once the client config file has been read. Rendering before this would throw. */
+    public static boolean isLoaded() {
+        return CLIENT_SPEC.isLoaded();
+    }
+
     public static class Client {
         public final ForgeConfigSpec.BooleanValue showVanillaHearts;
         public final ForgeConfigSpec.BooleanValue enableDynamicHealthColor;
@@ -61,6 +66,28 @@ public class BetterHPConfig {
         public final ForgeConfigSpec.BooleanValue manaFollowHealthWidth;
         public final ForgeConfigSpec.IntValue manaOffsetX;
         public final ForgeConfigSpec.IntValue manaOffsetY;
+
+        // 8.2: status icons + mod compat
+        public final ForgeConfigSpec.BooleanValue showStatusHealthIcons;
+        public final ForgeConfigSpec.BooleanValue appleSkinCompat;
+        public final ForgeConfigSpec.BooleanValue appleSkinFoodPreview;
+        public final ForgeConfigSpec.BooleanValue appleSkinHealthPreview;
+        public final ForgeConfigSpec.BooleanValue appleSkinExhaustionBar;
+        public final ForgeConfigSpec.BooleanValue eidolonCompat;
+        public final ForgeConfigSpec.BooleanValue eidolonChilledFrozenHearts;
+        public final ForgeConfigSpec.BooleanValue eidolonShowEtherealHealth;
+        public final ForgeConfigSpec.BooleanValue eidolonHideHeartsOverlay;
+        public final ForgeConfigSpec.BooleanValue lsoCompat;
+        public final ForgeConfigSpec.BooleanValue lsoReplaceThirstBar;
+        public final ForgeConfigSpec.BooleanValue lsoShowThirstSaturation;
+        public final ForgeConfigSpec.IntValue lsoThirstX;
+        public final ForgeConfigSpec.IntValue lsoThirstY;
+        public final ForgeConfigSpec.BooleanValue lsoReplaceTemperature;
+        public final ForgeConfigSpec.IntValue lsoTemperatureX;
+        public final ForgeConfigSpec.IntValue lsoTemperatureY;
+        public final ForgeConfigSpec.BooleanValue lsoColdHungerFrozen;
+        public final ForgeConfigSpec.BooleanValue lsoShowShieldHealth;
+        public final ForgeConfigSpec.BooleanValue lsoShowBrokenHearts;
 
 
         public Client(ForgeConfigSpec.Builder builder) {
@@ -244,7 +271,63 @@ public class BetterHPConfig {
                     .comment("Mana Y offset relative to the health anchor")
                     .defineInRange("manaOffsetY", 0, -1000, 1000);
 
+            showStatusHealthIcons = builder
+                    .comment("Swap the health icon and text colour while Poisoned, Withered or Frozen (like vanilla's heart types).",
+                            "Frozen covers powder snow and, with Eidolon: Repraised, the Chilled effect.")
+                    .define("showStatusHealthIcons", true);
 
+            builder.pop();
+
+            builder.comment("AppleSkin compat (only active when AppleSkin is installed).").push("appleskin");
+            appleSkinCompat = builder.comment("Master switch for AppleSkin compat.").define("enabled", true);
+            appleSkinFoodPreview = builder
+                    .comment("While holding food, show the hunger (+N) and saturation it restores above the hunger value.",
+                            "Follows AppleSkin's own 'showFoodValuesHudOverlay' settings.")
+                    .define("showFoodPreview", true);
+            appleSkinHealthPreview = builder
+                    .comment("While holding food, show the estimated health it will regenerate after the health value.",
+                            "Follows AppleSkin's own 'showFoodHealthHudOverlay' setting.")
+                    .define("showHealthPreview", true);
+            appleSkinExhaustionBar = builder
+                    .comment("Draw a thin exhaustion bar under the hunger value (follows AppleSkin's 'showFoodExhaustionHudUnderlay').")
+                    .define("showExhaustionBar", true);
+            builder.pop();
+
+            builder.comment("Eidolon: Repraised compat (only active when Eidolon is installed).").push("eidolon");
+            eidolonCompat = builder.comment("Master switch for Eidolon compat.").define("enabled", true);
+            eidolonChilledFrozenHearts = builder
+                    .comment("When you are Chilled (hit by a Wraith, Bonechill wand, frost spells...), your health turns frozen:",
+                            "the health icon becomes an ice bottle and the number turns icy blue.")
+                    .define("chilledFrozenHearts", true);
+            eidolonShowEtherealHealth = builder
+                    .comment("Show Eidolon ethereal (soul) health as a purple +N after your health.")
+                    .define("showEtherealHealth", true);
+            eidolonHideHeartsOverlay = builder
+                    .comment("Hide Eidolon's own heart overlay while vanilla hearts are hidden, so it doesn't float over empty space.")
+                    .define("hideEidolonHeartsOverlay", true);
+            builder.pop();
+
+            builder.comment("Legendary Survival Overhaul compat (only active when LSO is installed).").push("legendarySurvivalOverhaul");
+            lsoCompat = builder.comment("Master switch for LSO compat.").define("enabled", true);
+            lsoReplaceThirstBar = builder
+                    .comment("Show thirst as a BetterHP value (water bottle icon) instead of LSO's thirst bar.")
+                    .define("replaceThirstBar", true);
+            lsoShowThirstSaturation = builder.comment("Show thirst saturation as +N after the thirst value.")
+                    .define("showThirstSaturation", true);
+            lsoThirstX = builder.comment("Horizontal position of the thirst display").defineInRange("thirstDisplayX", 70, -1000, 1000);
+            lsoThirstY = builder.comment("Vertical position of the thirst display").defineInRange("thirstDisplayY", 74, 0, 1000);
+            lsoReplaceTemperature = builder
+                    .comment("Show body temperature as a BetterHP thermometer instead of LSO's temperature indicator.",
+                            "The exact degrees only show with LSO's thermometer equipped, like LSO itself. Uses LSO's C/F setting.")
+                    .define("replaceTemperature", true);
+            lsoTemperatureX = builder.comment("Horizontal position of the temperature display").defineInRange("temperatureDisplayX", -5, -1000, 1000);
+            lsoTemperatureY = builder.comment("Vertical position of the temperature display").defineInRange("temperatureDisplayY", 60, 0, 1000);
+            lsoColdHungerFrozen = builder.comment("Show a frozen hunger icon/colour while LSO's Cold Hunger effect is active.")
+                    .define("coldHungerFrozenIcon", true);
+            lsoShowShieldHealth = builder.comment("Show LSO shield health as a silver +N after your health.")
+                    .define("showShieldHealth", true);
+            lsoShowBrokenHearts = builder.comment("Show LSO broken hearts as a dark red -N\u2764 after your health.")
+                    .define("showBrokenHearts", true);
             builder.pop();
         }
     }

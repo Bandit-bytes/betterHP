@@ -1,26 +1,57 @@
-modLoader = "javafml" #mandatory
-loaderVersion = "[47,)" # You can set this to the specific range of Forge versions you want to support.
-license = "MIT" # Your mod's license. Choose the appropriate license for your project.
+modLoader = "javafml"
+loaderVersion = "${loader_version_range}"
+license = "${mod_license}"
 
 [[mods]]
-modId = "better_hp" # Your mod's ID, which is usually the same as your package name.
-version = "7.5.1" # Your mod's version.
-displayName = "Better HP" # The display name of your mod.
-authors = "BanditBytes" # Replace with your name or username.
+modId = "better_hp"
+version = "${mod_version}"
+displayName = "Better HP"
+authors = "BanditBytes"
 description = '''
-This mod displays the player's health above the health bar in the HUD.
-''' # Description of your mod.
+A cleaner HUD: health, hunger, armor and more as crisp numbers and icons. Fully customizable.
+'''
+# Client-side HUD mod: servers don't need it, and clients with it can join servers without it.
+displayTest = "IGNORE_ALL_VERSION"
 
-[[dependencies."better_hp"]]
-modId = "forge" #mandatory
-mandatory = true #mandatory
-versionRange = "[47.0.0,)" # Set this to the Forge version range you support.
+[[dependencies.better_hp]]
+modId = "forge"
+mandatory = true
+versionRange = "${forge_version_range}"
 ordering = "NONE"
-side = "CLIENT" # Change this to CLIENT
+side = "CLIENT"
 
-[[dependencies."better_hp"]]
+[[dependencies.better_hp]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.20.1,1.21.0)" # This version range declares compatibility with 1.20.1 up to but not including 1.21.0.
+versionRange = "${minecraft_version_range}"
 ordering = "NONE"
-side = "CLIENT" # Change this to CLIENT
+side = "CLIENT"
+
+# ---- Optional compat: none of these are required.
+[[dependencies.better_hp]]
+modId = "irons_spellbooks"
+mandatory = false
+versionRange = "[0,)"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.better_hp]]
+modId = "appleskin"
+mandatory = false
+versionRange = "[0,)"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.better_hp]]
+modId = "eidolon"
+mandatory = false
+versionRange = "[0,)"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.better_hp]]
+modId = "legendarysurvivaloverhaul"
+mandatory = false
+versionRange = "[0,)"
+ordering = "AFTER"
+side = "CLIENT"

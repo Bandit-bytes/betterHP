@@ -1,61 +1,42 @@
 package net.bandit.better_hp.integration;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.bandit.better_hp.config.BetterHPConfig;
+import net.bandit.better_hp.integration.irons.IronsImpl;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Method;
-
+/** Iron's Spells 'n Spellbooks mana. Safe to call whether or not Iron's is installed. */
 public final class IronsSpellbooksCompat {
+    private static final CompatState STATE = new CompatState("irons_spellbooks", "Iron's Spells 'n Spellbooks");
 
     public record ManaInfo(int mana, int maxMana) {}
 
-    private static final String MODID = "irons_spellbooks";
-
-    private static boolean lookedUp = false;
-
-    // Client mana accessor (the one their HUD uses)
-    private static Method CLIENT_MAGICDATA_GET_PLAYER_MANA;
+    private IronsSpellbooksCompat() {}
 
     public static boolean isLoaded() {
-        return ModList.get().isLoaded(MODID);
+        return STATE.isLoaded();
     }
 
-    public static ManaInfo getMana(Player player) {
-        if (player == null || !isLoaded()) return null;
+    /** Better HP is drawing mana right now. */
+    public static boolean rendersMana() {
+        return STATE.usable()
+                && BetterHPConfig.CLIENT.enableIronsManaCompat.get()
+                && BetterHPConfig.CLIENT.showMana.get();
+    }
 
+    /** Iron's own mana bar should be hidden (only while Better HP draws mana instead). */
+    public static boolean shouldHideIronsManaBar() {
+        return rendersMana() && BetterHPConfig.CLIENT.hideIronsManaOverlay.get();
+    }
+
+    @Nullable
+    public static ManaInfo getMana(@Nullable Player player) {
+        if (player == null || !rendersMana()) return null;
         try {
-            ensureReflection();
-
-            // 1) max mana via attribute (synced)
-            Attribute maxManaAttr = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(MODID, "max_mana"));
-            if (maxManaAttr == null) return null;
-            int maxMana = (int) Math.floor(player.getAttributeValue(maxManaAttr));
-
-            // 2) current mana via ClientMagicData (synced by their packets)
-            int mana = ((Number) CLIENT_MAGICDATA_GET_PLAYER_MANA.invoke(null)).intValue();
-
-            // clamp just in case
-            if (maxMana < 0) maxMana = 0;
-            if (mana < 0) mana = 0;
-            if (mana > maxMana) mana = maxMana;
-
-            return new ManaInfo(mana, maxMana);
+            return IronsImpl.getMana(player);
         } catch (Throwable t) {
-            t.printStackTrace();
+            STATE.fail(t);
             return null;
         }
     }
-
-    private static void ensureReflection() throws Exception {
-        if (lookedUp) return;
-        lookedUp = true;
-
-        Class<?> clientMagicDataClz = Class.forName("io.redspace.ironsspellbooks.player.ClientMagicData");
-        CLIENT_MAGICDATA_GET_PLAYER_MANA = clientMagicDataClz.getMethod("getPlayerMana");
-    }
-
-    private IronsSpellbooksCompat() {}
 }

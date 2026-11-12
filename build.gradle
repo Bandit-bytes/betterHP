@@ -140,6 +140,15 @@ repositories {
     maven { url = "https://maven.theillusivec4.top" }
     maven { url = "https://maven.blamejared.com" }
     maven { url = "https://maven.kosmx.dev/" }
+    // Modrinth maven: optional compat mods (AppleSkin, Eidolon: Repraised, LSO, Iron's)
+    // (not exclusiveContent: ForgeGradle serves the fg.deobf'd copies of these from its own local repo)
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
 }
 
 dependencies {
@@ -149,6 +158,13 @@ dependencies {
     // If the group id is "net.minecraft" and the artifact id is one of ["client", "server", "joined"],
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    // Optional compat mods: compile-only, never bundled. Only touched from isolated *Impl classes
+    // after ModList confirms the mod is loaded.
+    compileOnly fg.deobf("maven.modrinth:appleskin:${appleskin_version}")
+    compileOnly fg.deobf("maven.modrinth:eidolonrepraised:${eidolon_repraised_version}")
+    compileOnly fg.deobf("maven.modrinth:legendary-survival-overhaul:${lso_version}")
+    compileOnly fg.deobf("maven.modrinth:irons-spells-n-spellbooks:${irons_spells_version}")
 //    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
 
