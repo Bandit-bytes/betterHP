@@ -14,7 +14,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameType;
+import net.bandit.betterhp_fabric.integration.AppleSkinCompat;
 import net.minecraft.client.renderer.RenderPipelines;
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -36,11 +36,20 @@ public class HealthDisplayHandler implements HudRenderCallback {
             ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/hardcore_health_icon.png");
     private static final ResourceLocation MOUNT_ICON =
             ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/mount_icon.png");
+    private static final ResourceLocation FROZEN_HEALTH_ICON =
+            ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/frozen_health_icon.png");
+    private static final ResourceLocation POISONED_HEALTH_ICON =
+            ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/poisoned_health_icon.png");
+    private static final ResourceLocation WITHERED_HEALTH_ICON =
+            ResourceLocation.fromNamespaceAndPath("betterhp_fabric", "textures/gui/withered_health_icon.png");
+    private static final int FROZEN_COLOR = 0x9BE7FF;
+    private static final float BOUNCE_TICKS = 10F;
 
-    private int armorBounceTicks = 0;
-    private int toughnessBounceTicks = 0;
-    private int lastRenderedArmorValue = 0;
-    private int lastRenderedToughness = 0;
+    // Frame-rate independent "pop" when armor/toughness change (start time in ticks).
+    private float armorBounceStart = -BOUNCE_TICKS;
+    private float toughnessBounceStart = -BOUNCE_TICKS;
+    private int lastRenderedArmorValue = Integer.MIN_VALUE; // MIN_VALUE = no bounce on join
+    private int lastRenderedToughness = Integer.MIN_VALUE;
 
     @Override
     public void onHudRender(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
@@ -49,12 +58,12 @@ public class HealthDisplayHandler implements HudRenderCallback {
 
         if (minecraft.options.hideGui) return;
 
-        if (player == null
-                || minecraft.gameMode == null
-                || minecraft.gameMode.getPlayerMode() == GameType.CREATIVE
-                || minecraft.gameMode.getPlayerMode() == GameType.SPECTATOR) {
+        // Same rule vanilla uses for its bars: nothing in creative/spectator.
+        if (player == null || minecraft.gameMode == null || !minecraft.gameMode.canHurtPlayer()) {
             return;
         }
+        float time = player.tickCount + deltaTracker.getGameTimeDeltaPartialTick(true);
+        AppleSkinCompat.FoodPreview food = AppleSkinCompat.foodPreview(player);
         guiGraphics.nextStratum();
 
         boolean isHardcore = minecraft.level != null && minecraft.level.getLevelData().isHardcore();
@@ -66,10 +75,14 @@ public class HealthDisplayHandler implements HudRenderCallback {
         int armorValue = player.getArmorValue();
         int hunger = player.getFoodData().getFoodLevel();
         int saturation = Mth.ceil(player.getFoodData().getSaturationLevel());
-        int air = player.getAirSupply();
+        int air = Math.max(0, player.getAirSupply()); // negative while drowning
         int maxAir = player.getMaxAirSupply();
 
-        int healthColor = determineHealthColor(player);
+        boolean statusIcons = ConfigManager.showStatusHealthIcons();
+        boolean frozen = statusIcons && player.isFullyFrozen();
+        int healthColor = frozen
+                ? interpolateColor(0.5f + 0.5f * Mth.sin(time * 0.15f), FROZEN_COLOR, 0xE6FAFF)
+                : determineHealthColor(player);
         int hungerColor = determineHungerColor(hunger, 20);
         int breatheColor = 0x00BFFF;
 
@@ -98,7 +111,10 @@ public class HealthDisplayHandler implements HudRenderCallback {
         profiler.push("betterhp_healthIcon");
         try {
             if (ConfigManager.showHealthIcon()) {
-                ResourceLocation icon = isHardcore ? HARDCORE_HEALTH_ICON : HEALTH_ICON;
+                ResourceLocation icon = statusIcons && player.hasEffect(MobEffects.POISON) ? POISONED_HEALTH_ICON
+                        : statusIcons && player.hasEffect(MobEffects.WITHER) ? WITHERED_HEALTH_ICON
+                        : frozen ? FROZEN_HEALTH_ICON
+                        : isHardcore ? HARDCORE_HEALTH_ICON : HEALTH_ICON;
                 renderIcon(guiGraphics, icon, healthPosX - 18, healthPosY - 4);
 
                 int shakeOffset = 0;
@@ -113,6 +129,12 @@ public class HealthDisplayHandler implements HudRenderCallback {
                     int healthTextWidth = minecraft.font.width(health + "/" + maxHealth);
                     drawShadowedText(guiGraphics, minecraft,
                             "+" + absorption, healthPosX + healthTextWidth + 3, healthPosY, 0xFFFF00);
+                }
+
+                // AppleSkin: health the held food will regenerate, floating just above the value.
+                if (food != null && food.health() > 0F) {
+                    drawArgbText(guiGraphics, minecraft, "+" + formatDecimal(food.health()), healthPosX, healthPosY - 10,
+                            withAlpha(0x55FF55, flashAlpha(time)));
                 }
             }
         } finally {
@@ -143,6 +165,28 @@ public class HealthDisplayHandler implements HudRenderCallback {
                         drawShadowedText(guiGraphics, minecraft, hungerText,
                                 hungerPosX - minecraft.font.width(hungerText), hungerPosY, hungerColor);
                     }
+
+                    int textWidth = minecraft.font.width(hungerText);
+                    int textStart = hungerPosX - textWidth;
+
+                    // AppleSkin: exhaustion bar under the number.
+                    float exhaustion = AppleSkinCompat.exhaustionFraction(player);
+                    if (exhaustion >= 0F) {
+                        guiGraphics.fill(textStart, hungerPosY + 10, hungerPosX, hungerPosY + 11, 0x60000000);
+                        int filled = Math.round(textWidth * exhaustion);
+                        if (filled > 0) guiGraphics.fill(textStart, hungerPosY + 10, textStart + filled, hungerPosY + 11, 0xC0FFFFFF);
+                    }
+
+                    // AppleSkin: what the held food restores, floating just above the number.
+                    if (food != null && (food.hunger() > 0 || food.saturation() > 0F)) {
+                        int alpha = flashAlpha(time);
+                        String preview = food.hunger() > 0 ? "+" + food.hunger() : "";
+                        if (!preview.isEmpty()) drawArgbText(guiGraphics, minecraft, preview, textStart, hungerPosY - 10, withAlpha(0xFF7518, alpha));
+                        if (food.saturation() > 0F) {
+                            int sx = textStart + (preview.isEmpty() ? 0 : minecraft.font.width(preview) + 3);
+                            drawArgbText(guiGraphics, minecraft, "+" + formatDecimal(food.saturation()), sx, hungerPosY - 10, withAlpha(0xFFD700, alpha));
+                        }
+                    }
                 }
 
                 ResourceLocation hungerIconToUse = hasHungerEffect ? NO_HUNGER_ICON : HUNGER_ICON;
@@ -172,19 +216,15 @@ public class HealthDisplayHandler implements HudRenderCallback {
                 toughness = Mth.ceil(toughnessAttr.getValue());
             }
 
-            if (armorValue != lastRenderedArmorValue) armorBounceTicks = 10;
+            if (lastRenderedArmorValue != Integer.MIN_VALUE && armorValue != lastRenderedArmorValue) armorBounceStart = time;
             lastRenderedArmorValue = armorValue;
 
-            if (toughness != lastRenderedToughness) toughnessBounceTicks = 10;
+            if (lastRenderedToughness != Integer.MIN_VALUE && toughness != lastRenderedToughness) toughnessBounceStart = time;
             lastRenderedToughness = toughness;
 
             // Armor
             if (ConfigManager.showArmorIcon() && armorValue > 0) {
-                float scale = 1.0f;
-                if (armorBounceTicks > 0) {
-                    scale = 1.0f + 0.2f * (float) Math.sin((10 - armorBounceTicks) * Math.PI / 10);
-                    armorBounceTicks--;
-                }
+                float scale = bounceScale(armorBounceStart, time);
 
                 float pulse = (armorValue == 20)
                         ? (0.9f + 0.1f * (float) Math.sin(player.tickCount * 0.2f))
@@ -210,11 +250,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
                 int toughnessPosX = armorPosX + ConfigManager.toughnessDisplayX();
                 int toughnessPosY = armorPosY + ConfigManager.toughnessDisplayY();
 
-                float scale = 1.0f;
-                if (toughnessBounceTicks > 0) {
-                    scale = 1.0f + 0.2f * (float) Math.sin((10 - toughnessBounceTicks) * Math.PI / 10);
-                    toughnessBounceTicks--;
-                }
+                float scale = bounceScale(toughnessBounceStart, time);
 
                 float pulse = (toughness >= 5)
                         ? (0.9f + 0.1f * (float) Math.sin(player.tickCount * 0.2f))
@@ -277,6 +313,34 @@ public class HealthDisplayHandler implements HudRenderCallback {
         }
     }
 
+    private static float bounceScale(float start, float now) {
+        float progress = (now - start) / BOUNCE_TICKS;
+        // progress < 0 happens when tickCount resets (respawn / dimension change).
+        if (progress < 0f || progress >= 1f) return 1f;
+        return 1f + 0.2f * Mth.sin(progress * Mth.PI);
+    }
+
+    /** AppleSkin-style flashing for preview values. */
+    private static int flashAlpha(float time) {
+        return (int) (110 + 145 * (0.5f + 0.5f * Mth.sin(time * 0.25f)));
+    }
+
+    private static int withAlpha(int rgb, int alpha) {
+        return (Mth.clamp(alpha, 8, 255) << 24) | (rgb & 0xFFFFFF);
+    }
+
+    /** "3", "2.5": one decimal, dropped when whole. */
+    private static String formatDecimal(float value) {
+        float rounded = Math.round(value * 10f) / 10f;
+        if (rounded == (int) rounded) return Integer.toString((int) rounded);
+        return String.format(java.util.Locale.ROOT, "%.1f", rounded);
+    }
+
+    /** Like drawShadowedText but keeps the given alpha (used for flashing previews). */
+    private void drawArgbText(GuiGraphics guiGraphics, Minecraft minecraft, String text, int x, int y, int argb) {
+        guiGraphics.drawString(minecraft.font, text, x, y, argb, true);
+    }
+
     private void renderIcon(GuiGraphics gg, ResourceLocation icon, int x, int y) {
         gg.blit(RenderPipelines.GUI_TEXTURED, icon, x, y, 0, 0, 16, 16, 16, 16);
     }
@@ -305,7 +369,7 @@ public class HealthDisplayHandler implements HudRenderCallback {
 
     private int determineHealthColor(Player player) {
         if (player.hasEffect(MobEffects.POISON)) return 0x9ACD32;
-        if (player.hasEffect(MobEffects.WITHER)) return 0x403030;
+        if (player.hasEffect(MobEffects.WITHER)) return 0x8C8484; // readable on dark backgrounds
 
         float health = player.getHealth();
         float maxHealth = player.getMaxHealth();
